@@ -1,0 +1,363 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+<link rel="Bookmark" href="/favicon.ico" >
+<link rel="Shortcut Icon" href="/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="static/h-ui/css/H-ui.min.css" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/H-ui.admin.css" />
+<link rel="stylesheet" type="text/css" href="lib/Hui-iconfont/1.0.8/iconfont.css" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/skin/default/skin.css" id="skin" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/style.css" />
+
+
+<script src="js/jquery-1.11.3.js"></script>
+<script src="bootstrap/js/bootstrap.js"></script>
+<script type="text/javascript" src="js/jsencrypt.min.js"></script>
+<script src="js/vue.js"></script>
+<script src="js/axios.min.js"></script>
+<script src="layer/layer.js"></script>
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<script type="text/javascript" src="js/swuorange-common.js"></script>
+<link rel="stylesheet" href="bootstrap/css/bootstrap.css" />
+<link rel="stylesheet" href="bootstrap/css/bootstrap-theme.css" />
+
+<title>基地列表</title>
+<style type="text/css">
+
+	.modal-backdrop{
+		z-index:0;
+	}
+	#pager{
+		width:300px;
+		margin:auto;
+		margin-right:30px;
+		height:30px ;
+		
+	}
+	.input-group{
+		margin-top:10px;
+	}
+	
+	li{
+		cursor:pointer;
+	}
+
+</style>
+<script type="text/javascript">
+	$(function(){
+		laydate.render({
+		  elem: '#logmin',
+		  type: 'date',
+		  done: function(value, date, endDate){
+			  vm.search.startTime=value;
+		    }
+		});
+		laydate.render({
+		  elem: '#logmax',
+		  type: 'date',
+		  done: function(value, date, endDate){
+			  vm.search.endTime=value;
+		    }
+		});
+	})
+</script>
+
+</head>
+<body>
+<nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 基地管理 <span class="c-gray en">&gt;</span> 基地总览<a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+<div class="page-container" id="base-app">
+	<div class="text-c"> 
+	添加时间:
+		<input v-model="search.startTime" type="text"  id="logmin" class="input-text Wdate" style="width:120px;">
+		-
+		<input v-model="search.endTime" type="text"  id="logmax" class="input-text Wdate" style="width:120px;">
+		
+		<input v-model="search.baseName" type="text" class="input-text" style="width:250px" placeholder="输入基地名称" >
+		<button @click="getlist()" type="button" class="btn btn-success" ><i class="Hui-iconfont">&#xe665;</i> 点击搜索基地</button>
+	</div>
+	<div class="cl pd-5 bg-1 bk-gray mt-20"> <span class="l"><a @click="del1()" href="javascript:;" data-toggle="modal" data-target="#myConform" class="btn btn-danger radius"><i class="Hui-iconfont">&#xe6e2;</i> 批量删除</a> <a href="javascript:;" @click="addnull()" class="btn btn-primary radius" data-toggle="modal" data-target="#myBase"><i class="Hui-iconfont">&#xe600;</i> 添加基地</a></span> <span class="r">共有数据：<strong>{{page.totalRow}}</strong> 条</span> </div>
+	<table class="table table-border table-bordered table-bg">
+		<thead>
+			<tr>
+				<th scope="col" colspan="9">基地列表</th>
+			</tr>
+			<tr class="text-c">
+				<th width="25"></th>
+				<th width="40">序号</th>
+				<th width="100">基地名称</th>
+				<th width="150">所属公司</th>
+				<th width="100">负责人</th>
+				<th width="100">联系电话</th>
+				<th width="200">联系地址</th>
+				<th width="150">添加时间</th>
+				<th width="70">操作</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr v-for="(base,index) in page.list" class="text-c">
+				<td><input type="checkbox" v-model="selelist" :value="base.baseId"></td>
+				<td>{{index+1}}</td>
+				<td>{{base.baseName}}</td>
+				<td>{{base.companyName}}</td>
+				<td>{{base.staffName}}</td>
+				<td>{{base.phone}}</td>
+				<td>{{base.baseAddress}}</td>
+				<td>{{base.addTime}}</td>
+				<td class="td-manage"> <a @click="edit(base)" title="编辑" href="javascript:;" data-toggle="modal" data-target="#myBase" class="ml-5" style="text-decoration:none"><i class="Hui-iconfont">&#xe6df;</i></a> <a title="删除" href="javascript:;" @click="adddel(base.baseId)" data-toggle="modal" data-target="#myConform" class="ml-5" style="text-decoration:none"><i class="Hui-iconfont">&#xe6e2;</i></a></td>
+			</tr>
+		</tbody>
+	</table>
+	<!-- 分页组件  -->
+	<div id="pager">
+		 <nav aria-label="Page navigation">
+		  <ul class="pagination">
+		    <li>
+		      <a @click="topage(1)" aria-label="Previous">
+		        <span aria-hidden="true">首页</span>
+		      </a>
+		    </li>
+		     <li v-for="p in pages" ><a @click="topage(p)">{{p}}</a></li>
+		    <li>
+		      <a @click="topage(page.totalPage)" aria-label="Next">
+		        <span aria-hidden="true">尾页</span>
+		      </a>
+		    </li>
+		  </ul>
+		</nav> 
+	</div>
+	
+	<!-- 基地增加和基地编辑的模态框 -->
+	<div class="modal fade" id="myBase" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	    <div class="modal-dialog">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	                <h4 class="modal-title" id="myModalLabel">基地保存</h4>
+	            </div>
+	            <div class="modal-body">
+	            	<!-- 基地管理编辑区 -->
+	            	{{base}}
+	            	<div class="input-group">
+					  <span class="input-group-addon" id="basic-addon1">基地名称</span>
+					  <input v-model="base.baseName" type="text" class="form-control" placeholder="基地名称" aria-describedby="basic-addon1">
+					</div>
+	            	<div class="input-group">
+					  <span class="input-group-addon" id="basic-addon4">联系电话</span>
+					  <input v-model="base.phone" type="text" class="form-control" placeholder="联系电话" aria-describedby="basic-addon4">
+					</div>
+	            	<div class="input-group">
+					  <span class="input-group-addon" id="basic-addon5">联系地址</span>
+					  <input v-model="base.baseAddress" type="text" class="form-control" placeholder="联系地址" aria-describedby="basic-addon5">
+					</div>
+					<div class="input-group">
+					  <span class="input-group-addon" id="basic-addon3">负责人员</span>
+					  <input readonly="readonly" style="width:250px" v-model="base.staffName" type="text" class="form-control" placeholder="负责人员" aria-describedby="basic-addon3"><a data-toggle="modal"  data-target="#myHead" ><span class="btn btn-success input-group-addon glyphicon glyphicon-search"></span></a>
+					</div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+	                <button type="button" class="btn btn-primary" data-dismiss="modal"  @click="updateOrInsert()">保存</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	<!-- 选择人员查找带回 -->
+	<div class="modal fade" id="myHead" tabindex="-1" style="z-index:2000" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	    <div class="modal-dialog">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	                <h4 class="modal-title" id="myModalLabel">基地负责人</h4>
+	            </div>
+	            <div class="modal-body">
+	            	<!-- 基地负责人选择 -->
+	            	<div class="input-group">
+					  <span class="input-group-addon" id="basic-addon1">基地负责人</span>
+					  <input style="width:75%" v-model="staff.staffName"  type="text" class="form-control" placeholder="基地负责人" aria-describedby="basic-addon1">
+					  <input type="button" class="btn btn-sm btn-success" @click="getStaff()" value="搜一下">
+					</div>
+					
+					<div class="list-group">
+					  <button style="width:79.5%" v-for="s in staffs"  @click="baseHead(s)" type="button" class="list-group-item">{{s.staffName}}</button>
+					</div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-primary" data-dismiss="modal">确认</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	
+	
+	
+	<div class="modal fade" id="myConform" tabindex="-1" role="dialog" aria-labelledby="myConform" aria-hidden="true">
+	    <div class="modal-dialog">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h2 class="modal-title" id="myModalLabel">{{conf.title}}</h2>
+	            </div>
+	            <div class="modal-body">{{conf.msg}}</div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+	                <button type="button" @click="del()" data-dismiss="modal" class="btn btn-primary">确认</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+</div>
+<!--_footer 作为公共模版分离出去-->
+<script type="text/javascript" src="lib/jquery/1.9.1/jquery.min.js"></script> 
+<script type="text/javascript" src="lib/layer/2.4/layer.js"></script>
+<script type="text/javascript" src="static/h-ui/js/H-ui.min.js"></script> 
+<script type="text/javascript" src="static/h-ui.admin/js/H-ui.admin.js"></script> <!--/_footer 作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="lib/My97DatePicker/4.8/WdatePicker.js"></script> 
+<script type="text/javascript" src="lib/datatables/1.10.0/jquery.dataTables.min.js"></script> 
+<script type="text/javascript" src="lib/laypage/1.2/laypage.js"></script>
+<script type="text/javascript">
+var vm = new Vue({
+		el:"#base-app",
+		data:{
+		    //向后端发送的条件查询对象
+			search:{nowPage:1},
+			//后端返回数据
+			page:{},
+			//想要跳转的页面
+			wantpage:'',
+			//分页数组
+			pages:[],
+			/* 选中列表 */
+			selelist:[],
+			/* 模态提示框 */
+			conf:{title:"",msg:""},
+			/* 新增或者修改基地信息时候的base对象 */
+			base:{},
+			//返回的对象
+			result:{},
+			//查询出来的员工
+			staffs:[],
+			staff:{}
+		},
+		created:function(){
+           	this.getlist();
+        },
+		methods:{
+			/* 通过各种条件查询list */
+			getlist:function(){
+				this.pages=[];
+				sendAxios(
+	                'base/getBaseList',
+	                this.search
+            	).then(res => {
+                	this.page = res.data;
+                	this.getpage(res.data.nowPage);
+           		})
+			},
+			getpage:function(nowpage){
+				var start=1;
+				var end = nowpage+2;
+				if(nowpage-2<=0){
+					start=1;
+				}else{
+					start=nowpage-2;
+				};
+				if(nowpage+2>=this.page.totalPage){
+					end=this.page.totalPage;
+				};
+				
+				for(var i = start;i<=end;i++){
+					this.pages.push(i);
+				}
+			},
+			topage:function(topage){
+				this.search.nowPage=topage;
+				this.getlist();
+			},
+			//单个删除加入框
+			adddel:function(id){
+				this.selelist=[];
+				this.selelist.push(id);
+				this.conf={title:"确认删除",msg:"您将要删除"+this.selelist.length+"条信息?"}
+			},
+			del1:function(){
+				this.conf={title:"确认删除",msg:"您将要删除"+this.selelist.length+"条信息?"}
+			},
+			updateOrInsert:function(){
+				//$("#myConform").modal('show');
+				this.base.addTime=null;
+				sendAxios(
+	                'base/updateOrInsert',
+	               this.base
+            	).then(res => {
+            		layer.msg(res.data.msg);
+					checkBom(this.getlist);
+                	//this.conf.msg=res.data.msg;
+                	//this.result = res.data;
+                	//开始调用ajax发送确认消息
+                	//this.getlist();
+           		})
+			},
+			del:function(){
+			 	var delBase={};
+			 	delBase.list=this.arrtostr(this.selelist);
+				sendAxios(
+	                'base/delBaseList',
+	               delBase
+            	).then(res => {
+            		layer.msg(res.data.msg);
+					checkBom(this.getlist);
+                	//this.conf.msg=res.data.msg;
+                	//this.result = res.data;
+                	//开始调用ajax发送确认消息
+                	//this.getlist();
+           		})
+			},
+			/* 数组转行为字符串 */
+			arrtostr:function(arr){
+			var str ='';
+				for(var i = 0;i<arr.length;i++){
+					str+=arr[i]+"-";
+				}
+				return str;
+			},
+			//根据输入模糊查询企业员工
+			getStaff:function(){
+				sendAxios(
+	                'base/getStaff',
+	               this.staff
+            	).then(res => {
+                	//然后
+                	this.staffs=res.data.obj;
+           		})
+			
+			},
+			baseHead:function(s){
+				this.staff.staffName=s.staffName;
+				this.base.staffName=s.staffName;
+				this.base.baseHeaderId=s.staffId;
+			},
+			edit:function(b){
+				this.base=b;
+			},
+			addnull:function(){
+				this.base={};
+			}
+			
+		}
+})
+
+
+
+
+
+
+
+</script>
+</body>
+</html>

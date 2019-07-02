@@ -1,0 +1,312 @@
+<!doctype html>
+<html>
+<head>
+	<title>平台页面</title>
+	<meta charset="utf-8">
+	
+	<meta name="Keywords" content="" >
+	<meta name="Description" content="" >
+	<meta name="content-type" content="text/html; charset=UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link rel="stylesheet" href="bootstrap/css/bootstrap.css" media="screen" type="text/css"/>
+	<link rel="stylesheet" href="bootstrap/css/bootstrap.addtabs.css" media="screen"  type="text/css"/>
+	<link href="css/index.css" rel="stylesheet">
+	
+	<script type="text/javascript" src="js/jquery-1.11.3.js"></script>
+	<script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
+	<script type="text/javascript" src="bootstrap/js/bootstrap.addtabs.js"></script>
+	
+		
+
+</head>
+<body>
+<header>
+
+
+  <div class="headtop">
+    <div class="timer box"><span><a onclick="javascript:window.external.addFavorite('/','')" href="/">加入收藏</a> | <a onclick="this.style.behavior='url(#default#homepage)';this.setHomePage('/');" href="/">设为首页</a></span><script type="text/javascript" src="js/timer.js"></script></div>
+  </div>
+
+		
+			<!-- Header Starts -->
+		<div class="header">
+			<div class="header-container">
+				<div class="logo"> <a href="#">西南大学中国柑桔供应与产业信息服务平台</a> </div>
+					<div class="toll-free">
+						<p>联系我们: 400-800-123-4567</p>
+					</div>
+				<div class="clear"></div>
+			</div>
+		</div>
+		<!-- Header ends -->
+	
+				
+					
+  
+  <nav id="nav" class="box">
+    <ul>
+      <li><a href="#">网站首页</a></li>
+      <li><a href="#">供应大厅</a></li>
+      <li><a href="#">求购大厅</a></li>
+      <li><a href="#">行业资讯</a></li>
+      <li><a href="#">溯源系统</a></li>
+      <li><a href="#">培训课堂</a></li>
+      <li><a href="#">关于我们</a></li>
+      <li><a href="reg.html">登陆/注册</a></li>
+    </ul>
+  </nav>
+  
+  
+  
+  
+  <script src="js/silder.js"></script> 
+</header>
+<div id="app">
+	<!--查询溯源码-->
+	<div class="banner box">
+	
+		<div class="chaxun">
+			<div class="input-group"style="padding-top: 80px;">
+			<input v-model="search.traceSource" type="text" class="form-control input-lg"  placeholder="请输入溯源码" style="width:1000px">
+			<!-- <span @click="get()" class="input-group-addon btn btn-primary" data-toggle="modal" data-target="#myModal">点击查询</span> -->
+			<button @click="get()" type="submit" class="btn btn-success" id="" name="find" data-toggle="modal" data-target="#myModal"><i class="Hui-iconfont">&#xe665;</i> 点击查询</button>
+			</div>
+		</div>
+	
+	</div>
+	
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+						&times;
+					</button>
+					<h4 class="modal-title" id="myModalLabel">
+						信息详情
+					</h4>
+				</div>
+				<div class="modal-body">
+					<!-- 求购信息编辑区编辑区 -->
+					<div style="width: 90%; margin: auto;">
+						<table class="table table-striped table-hover">
+							<tr>
+								<td width="20%">
+									产品名称
+								</td>
+								<td>{{productDTO.variety}}</td>
+							</tr>
+							<tr>
+								<td>
+									批次号
+								</td>
+								<td>{{productDTO.bacthId}}</td>
+							</tr>
+							<tr>
+								<td>
+									生产公司
+								</td>
+								<td>{{productDTO.companyName}}</td>
+							</tr>
+							<tr>
+								<td>
+									生产地点
+								</td>
+								<td>{{productDTO.subbaseAddress}}</td>
+							</tr>
+							<tr>
+								<td>
+									生产基地
+								</td>
+								<td>{{productDTO.subbaseName}}</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<div class="box">
+  <div class="news left">
+    <h2><span class="more"><a href="/" target="_blank">更多...</a></span>行业资讯</h2>
+    <div class="pic_news left"><img src="images/newspic.jpg"></div>
+      <div class="center_news right">
+        
+        <ul>
+          <li><a href="/" target="_blank"><img src="images/new.gif"></a></li>
+          <li><a href="/" target="_blank">农民很犯愁，怎么才能降低水果上的农药残留<img src="images/new.gif"></a></li>
+          <li><a href="/" target="_blank">省时省工 减肥减药 增产增收：柑橘种植都用</a></li>
+          <li><a href="/" target="_blank">2019年柑橘种植前景如何？</a></li>
+          <li><a href="/" target="_blank">柑橘种植：柑橘施肥要科学，明年春季节如何</a></li>
+        </ul>
+      </div>
+  </div>
+  <div class="announce right">
+    <h2><a href="/">通知公告</a></h2>
+    <ul>
+     <marquee onmouseover="this.stop()" onmouseout="this.start()" scrollamount="2" direction="up" height="140">
+      <li><a href="/" target="_blank">武陵区农林局执法人员正检查农产品来贸易争端 矛头直指</a></li>
+      <li><a href="/" target="_blank">“秦台”农产品商标注册 </a></li>
+      <li><a href="/" target="_blank">美国挑起对华贸易争端 矛头直指</a></li>
+      <li><a href="/" target="_blank">重庆最大农产品批发市场开业海最大农产品批发市场开业贸易争端 矛头直指 </a></li>
+      <li><a href="/" target="_blank">上海:最大农产品批发市场开业贸易争端 矛头直指 ...</a></li>
+      <li><a href="/" target="_blank">多重屏障确保食品安全...</a></li>
+      </marquee>
+    </ul>
+  </div>
+  <div class="blank"></div>
+  
+  <div class="ad"><div class="zhanshi image">求购大厅信息</div></div>
+  <div class="blank"></div>
+  <div class="linews left">
+    <h3><span><a href="/" class="more">更多..</a></span>果树/果苗</h3>
+    <ul>
+      <li><a href="/" target="_blank"> [其它农机] 有机肥菌剂和生产设备 02-25</a></li>
+      <li><a href="/" target="_blank"> [冷库] 小型水果冷库、果园保鲜库/恒温库安装 02-23</a></li>
+      <li><a href="/" target="_blank">[葡萄苗] 着色香葡萄苗批发出售纯度%99以上的嫁接着色香葡萄苗 02-23</a></li>
+      <li><a href="/" target="_blank">[柑桔] 黄果柑 02-22</a></li>
+      <li><a href="/" target="_blank">[柑桔] 碰柑 02-23</a></li>
+      <li><a href="/" target="_blank">[柑桔]  柚子柑 02-24</a></li>
+    </ul>
+  </div>
+  <div class="linews left ln">
+    <h3><span><a href="/" class="more">更多..</a></span>生鲜水果</h3>
+    <ul>
+      <li><a href="/" target="_blank"> [其它农机] 有机肥菌剂和生产设备 02-25</a></li>
+      <li><a href="/" target="_blank"> [冷库] 小型水果冷库、果园保鲜库/恒温库安装 02-23</a></li>
+      <li><a href="/" target="_blank">[葡萄苗] 着色香葡萄苗批发出售纯度%99以上的嫁接着色香葡萄苗 02-23</a></li>
+      <li><a href="/" target="_blank">[柑桔] 黄果柑 02-22</a></li>
+      <li><a href="/" target="_blank">[柑桔] 碰柑 02-23</a></li>
+      <li><a href="/" target="_blank">[柑桔]  柚子柑 02-24</a></li>
+    </ul>
+  </div>
+  <div class="linews right">
+    <h3><span><a href="/" class="more">更多..</a></span>水果加工品</h3>
+    <ul>
+      <li><a href="/" target="_blank"> [其它农机] 有机肥菌剂和生产设备 02-25</a></li>
+      <li><a href="/" target="_blank"> [冷库] 小型水果冷库、果园保鲜库/恒温库安装 02-23</a></li>
+      <li><a href="/" target="_blank">[葡萄苗] 着色香葡萄苗批发出售纯度%99以上的嫁接着色香葡萄苗 02-23</a></li>
+      <li><a href="/" target="_blank">[柑桔] 黄果柑 02-22</a></li>
+      <li><a href="/" target="_blank">[柑桔] 碰柑 02-23</a></li>
+      <li><a href="/" target="_blank">[柑桔]  柚子柑 02-24</a></li>
+    </ul>
+  </div>
+  <div class="blank"></div>
+  <div class="ad"><div class="zhanshi image">供应大厅信息</div></div>
+  
+  <div class="blank"></div>
+  <div class="linews left">
+    <h3><span><a href="/" class="more">更多..</a></span>果树/果苗</h3>
+    <ul>
+      <li><a href="/" target="_blank"> [其它农机] 有机肥菌剂和生产设备 02-25</a></li>
+      <li><a href="/" target="_blank"> [冷库] 小型水果冷库、果园保鲜库/恒温库安装 02-23</a></li>
+      <li><a href="/" target="_blank">[葡萄苗] 着色香葡萄苗批发出售纯度%99以上的嫁接着色香葡萄苗 02-23</a></li>
+      <li><a href="/" target="_blank">[柑桔] 黄果柑 02-22</a></li>
+      <li><a href="/" target="_blank">[柑桔] 碰柑 02-23</a></li>
+      <li><a href="/" target="_blank">[柑桔]  柚子柑 02-24</a></li>
+    </ul>
+  </div>
+  <div class="linews left ln">
+    <h3><span><a href="/" class="more">更多..</a></span>生鲜水果</h3>
+    <ul>
+      <li><a href="/" target="_blank"> [其它农机] 有机肥菌剂和生产设备 02-25</a></li>
+      <li><a href="/" target="_blank"> [冷库] 小型水果冷库、果园保鲜库/恒温库安装 02-23</a></li>
+      <li><a href="/" target="_blank">[葡萄苗] 着色香葡萄苗批发出售纯度%99以上的嫁接着色香葡萄苗 02-23</a></li>
+      <li><a href="/" target="_blank">[柑桔] 黄果柑 02-22</a></li>
+      <li><a href="/" target="_blank">[柑桔] 碰柑 02-23</a></li>
+      <li><a href="/" target="_blank">[柑桔]  柚子柑 02-24</a></li>
+    </ul>
+  </div>
+  <div class="linews right">
+    <h3><span><a href="/" class="more">更多..</a></span>水果加工品</h3>
+    <ul>
+      <li><a href="/" target="_blank"> [其它农机] 有机肥菌剂和生产设备 02-25</a></li>
+      <li><a href="/" target="_blank"> [冷库] 小型水果冷库、果园保鲜库/恒温库安装 02-23</a></li>
+      <li><a href="/" target="_blank">[葡萄苗] 着色香葡萄苗批发出售纯度%99以上的嫁接着色香葡萄苗 02-23</a></li>
+      <li><a href="/" target="_blank">[柑桔] 黄果柑 02-22</a></li>
+      <li><a href="/" target="_blank">[柑桔] 碰柑 02-23</a></li>
+      <li><a href="/" target="_blank">[柑桔]  柚子柑 02-24</a></li>
+    </ul>
+  </div>
+
+  <div class="blank"></div>
+  <div class="links">
+  <p>相关链接:</p>
+  <ul>
+  	<li><a href="/">中国食药监局</a></li>
+  	<li><a href="/">中国质量安全网</a></li> 
+  	<li><a href="/">中国农产品信息网</a></li>
+    <li><a href="/">中柑所</a></li>   
+    <li><a href="/">中农网</a></li>
+      
+    
+  </ul>
+  <ul style="display:none">
+      <a href="/"><img src="images/ad01.jpg"></a><a href="/"><img src="images/ad02.jpg"></a>
+  </ul>
+  </div>
+</div>
+<footer>
+ <div class="footnav">
+ 	<ul>
+      <li><a href="#">网站首页</a></li>
+      <li><a href="#">供应大厅</a></li>
+      <li><a href="#">求购大厅</a></li>
+      <li><a href="#">行业资讯</a></li>
+      <li><a href="#">溯源系统</a></li>
+      <li><a href="#">培训课堂</a></li>
+      <li><a href="#">关于我们</a></li>
+      <li><a href="#">登陆/注册</a></li>
+    </ul>
+</div>
+<div class="copyright">
+<p>Copyright  2018 All Rights Reserved 版权所有 </p> 
+<p>地址：重庆市 联系电话：023-2222222</p>
+<p>备案号：渝22222222号</p>
+</div>
+
+</footer>
+
+
+</div>
+	<!-- 引入Vue -->
+	<script type="text/javascript" src="js/jsencrypt.min.js"></script>
+	<script type="text/javascript" src="js/vue-resource.min.js"></script>
+	<script type="text/javascript" src="js/vue.js"></script>
+	<script type="text/javascript" src="js/axios.min.js"></script>
+	<script type="text/javascript" src="js/swuorange-common.js"></script>
+	<script type="text/javascript" src="js/layer.js"></script>
+	
+	<script type="text/javascript">
+		var ve = new Vue({
+        el: "#app",
+        data: {
+            productDTO: [],
+            search:{}
+        },
+        methods:{
+        	/* 根据溯源码查询信息 */
+			get:function(){
+				sendAxios(
+	                'trace/searchTraceSource',
+	                this.search
+            	).then(res => {
+                	this.productDTO = res.data;
+           		})
+			},
+		
+        }
+    })
+	</script>
+
+
+</body>
+</html>

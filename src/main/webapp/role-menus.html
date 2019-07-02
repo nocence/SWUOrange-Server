@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<HTML>
+ <HEAD>
+  <TITLE>角色权限管理</TITLE>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" href="ztree/css/demo.css" type="text/css">
+  <link rel="stylesheet" href="ztree/css/zTreeStyle/zTreeStyle.css" type="text/css">
+  <script type="text/javascript" src="ztree/js/jquery-1.4.4.min.js"></script>
+  <script type="text/javascript" src="ztree/js/jquery.ztree.all.js"></script>
+  <script type="text/javascript" src="ztree/js/jquery.ztree.core.js"></script>
+  <script type="text/javascript" src="ztree/js/jquery.ztree.exedit.js"></script>
+  <script type="text/javascript" src="ztree/js/jquery.ztree.excheck.js"></script>
+  <script language="JavaScript">
+  var setting = {
+			data: {
+				simpleData: {
+					enable: true,
+					idKey: "id",
+		            pIdKey: "pId",
+		            rootPId: 0
+				}
+			},
+	        check: {
+	            enable: true
+	        },
+		};
+
+		var zNodes;
+		var zTree;
+		var node;
+		$(document).ready(function(){
+			$.ajax({  
+		        async : false,  
+		        cache:false,  
+		        type: 'POST',  
+		        dataType : "json",  
+		        url: "manager/getRolesTree",//请求的action路径  
+		        error: function () {//请求失败处理函数  
+		            alert('fail');  
+		        },  
+		        success:function(res){ //请求成功后处理函数。  
+		        	zNodes=res.obj1;
+		           $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+		           zTree = $.fn.zTree.getZTreeObj("treeDemo");
+		           for(i in res.obj2){
+		        	   node = zTree.getNodeByParam("id",res.obj2[i].id);
+			           node.checked = true;
+			           zTree.updateNode(node);
+		           }
+		           
+		        }  
+		    });
+			
+			
+			
+			$("button[name='ok']").click(function(){
+				var checkedObjs = zTree.getCheckedNodes(true);  //获取所有选中的节点
+				var str = JSON.stringify(checkedObjs);
+				$.ajax({  
+			        async : false,  
+			        cache:false,  
+			        type: 'POST',
+			        data:{
+						"arrobj":str,
+					},
+			        dataType : "json",  
+			        url: "manager/inserRM",//请求的action路径  
+			        error: function () {//请求失败处理函数  
+			            alert('fail');  
+			        },  
+			        success:function(res){ //请求成功后处理函数。  
+			           alert("修改成功")
+			        }  
+			    });
+			})
+		});
+   
+		
+  </script>
+ </head>
+<body>
+	 <div>
+	   <ul id="treeDemo" class="ztree"></ul>
+	   <button name="ok" >提交</button>
+	</div> 
+	
+	
+<script type="text/javascript">
+   
+</script>
+</body>
+</html>

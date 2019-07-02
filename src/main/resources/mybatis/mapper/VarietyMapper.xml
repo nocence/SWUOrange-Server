@@ -1,0 +1,19 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 配置对应的mapper映射文件 -->
+<mapper namespace="com.swuorange.dao.VarietyMapper">
+	<!-- id 要改成对应的mapper文件中方法名 resultType 要改成对应的返回值类型 -->
+	
+
+	<select id="query"  resultType="com.swuorange.dto.VarietyDTO" >
+     
+     	select * from swu_variety 
+	        	 
+    </select>
+
+  
+
+     
+
+	
+</mapper>

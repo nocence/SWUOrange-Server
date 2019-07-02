@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>企业认证</title>
+
+		<script src="js/jquery-1.11.3.js"></script>
+		<script src="bootstrap/js/bootstrap.js"></script>
+		<script type="text/javascript" src="js/jsencrypt.min.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="js/axios.min.js"></script>
+        <script type="text/javascript" src="js/swuorange-common.js"></script>
+		<link rel="stylesheet" href="bootstrap/css/bootstrap.css" />
+		<link rel="stylesheet" href="bootstrap/css/bootstrap-theme.css" />
+		<style>
+			table{
+				text-align: center;
+				font-size: 16px;
+				font-family: '宋体';
+			}
+			#my-app{
+				margin-top: 50px;
+				text-align: center;
+			}
+			td{
+				valign="middle";
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container" id="my-app">
+			<div class="row">
+				<table class="table table-striped table-hover">
+					<tr>
+						<td> 序号</td>
+						<td> 注册账户</td>
+						<td> 企业名称</td>
+						<td> 企业法人</td>
+						<td> 注册资本</td>
+						<td> 经营性质</td>
+						<td> 登记机关</td>
+						<td> 审核状态</td>
+						<td> 详情</td>
+						<td>
+							审核操作
+						</td>
+
+					</tr>
+					<tr v-for="(company,index) in companys" >
+						<td> {{index}}</td>
+						<td> {{company.account}}</td>
+						<td>{{company.companyName}}</td>
+						<td> {{company.legalPerson}}</td>
+						<td> {{company.registerCapital}}亿元</td>
+						<td> {{company.compositionForm}}</td>
+						<td> {{company.registrationAuthority}}</td>
+						<td> {{checkstate(company.state)}}</td>
+						<td> <input @click="findbyid(company.companyinfoId)" type="button" class="btn-group-xs btn-success" data-toggle="modal" data-target="#PutInventory" value="查看详细信息"> </td>
+						<td>
+							<input @click="checkfun(0,company.companyinfoId)" type="button" class="btn-group-xs btn-danger" value="驳回" />
+							<input @click="checkfun(1,company.companyinfoId)" type="button" class="btn-group-xs btn-success" value="通过" />
+						</td>
+					</tr>
+				</table>
+			</div>
+
+			<div class="modal fade" id="PutInventory" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<p style="font-size: 20px;">公司详细信息</p>
+							<table class="table table-striped table-hover">
+								
+								<tr>
+									<td width="30%">注册账户</td>
+									<td width="70%">{{company.account}}</td>
+								</tr>
+								<tr>
+									<td>企业名称</td>
+									<td>{{company.companyName}}</td>
+								</tr>
+								<tr>
+									<td>营业执照编号</td>
+									<td>{{company.licenceNum}}</td>
+								</tr>
+								<tr>
+									<td>企业法人</td>
+									<td>{{company.legalPerson}}</td>
+								</tr>
+								<tr>
+									<td>注册资本</td>
+									<td>{{company.registerCapital}}</td>
+								</tr>
+								<tr>
+									<td>公司类型</td>
+									<td>{{company.companyType}}</td>
+								</tr>
+								<tr>
+									<td>组织形式</td>
+									<td>{{company.compositionForm}}</td>
+								</tr>
+								<tr>
+									<td>经营范围</td>
+									<td>{{company.businessScope}}</td>
+								</tr>
+								<tr>
+									<td>登记机关</td>
+									<td>{{company.registrationAuthority}}</td>
+								</tr>
+								<tr>
+									<td>企业地址</td>
+									<td >{{company.contactAddress}}</td>
+								</tr>
+								<tr>
+									<td>联系方式</td>
+									<td>{{company.phone}}</td>
+								</tr>
+								<tr>
+									<td>审核状态</td>
+									<td>{{checkstate(company.state)}}</td>
+								</tr>
+							</table>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- 审批企业 -->
+			<div class="modal fade" id="pass" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+
+
+
+		</div>
+	<script>
+		new Vue({
+			el:"#my-app",
+			data:{
+				company:{},
+				companys:[],
+			},
+			created:function(){
+				sendAxios(
+	                'admin/listCompany',
+	                {state:1}
+            	).then(res => {
+                this.companys = res.data;
+            })},
+			methods:{
+				checkstate:function(state){
+					var i="";
+					if(state=="0"){
+						i="审核未通过"
+					}else if(state=="1"){
+						i="待审核"
+					}else if(state=="2"){
+						i="审核通过"
+					}
+					return  i;
+				},
+				
+				add:function(rel){
+					return false;
+				},
+				/* 通过id查找企业详细信息  */
+				findbyid:function(comid){
+					sendAxios(
+		                'admin/findOneCompany',
+		                {companyInfoId:comid}
+	            	).then(res => {
+	                this.company = res.data.obj;
+	            })
+				},
+				/* 
+				审核公司的权限 
+				type,操作的类型
+				comid,companyInfoId 公司表的id
+				*/
+				checkfun:function(type,comid){
+					sendAxios(
+		                'admin/checkCompanyInfo',
+		                {type:type,companyInfoId:comid}
+	            	).then(res => {
+	                	this.listCom();
+	           		})
+				},
+				/* 刷新列表 */
+				listCom:function(){
+					sendAxios(
+		                'admin/listCompany',
+		                {state:1}
+	            	).then(res => {
+	                	this.companys = res.data;
+	           		})
+				}
+				
+				
+			}
+		})
+		
+	</script>
+		
+	</body>
+</html>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 配置对应的mapper映射文件 -->
+<mapper namespace="com.swuorange.dao.TraceMapper">
+	
+	<select id="queryTraces" resultType="com.swuorange.dto.TraceDTO">
+		SELECT sa.`application_code`,
+				sa.`subbase_id`, 
+				ss.`subbase_name`,
+				sa.`bacth_id`,
+				sa.`variety_id`,
+				sv.`variety`,
+				sa.`type`,
+				sa.`user_id`,
+				sa.`apply_time`,
+				sa.`review_time`,
+				sa.`trace_source` 
+		FROM  `swu_application_record` sa ,`swu_subbase` ss , `swu_variety` sv
+		WHERE sa.`subbase_id` = ss.`subbase_id` 
+			and sa.`variety_id` = sv.`variety_id` 
+			and sa.`companyinfo_id` = #{companyinfoId}
+	</select>
+
+	
+	<select id="querySearchName" resultType="java.lang.String">
+		select realname from swu_user where account = #{account}
+	
+	</select>
+	
+	<select id="queryVarietyId" resultType="java.lang.Integer">
+		select variety_id from swu_variety where variety = #{variety}
+	</select>
+	
+	<select id="querySubbaseId" resultType="java.lang.Integer">
+		select subbase_id from swu_subbase where subbase_name = #{subbaseName}
+	</select>
+	
+	<select id="queryUserId" resultType="java.lang.Integer">
+		select user_id from swu_user where account = #{account}
+	</select>
+	
+	<select id="queryLastCode" resultType="java.lang.String">
+	
+		select application_code from swu_application_record order by application_id desc limit 1
+		
+	</select>
+	
+	<select id="queryTraceBlur" resultType="com.swuorange.dto.TraceDTO">
+	
+		select * from swu_application_record where bacth_id like concat(concat('%',#{bacthId},'%'))
+		
+	</select>
+	
+	<select id="queryProductMsg" resultType="com.swuorange.dto.ProductDTO">
+	
+		select  `sa`.bacth_id,`sv`.variety,`sc`.company_name,`ss`.subbase_name,`ss`.subbase_address  
+			from `swu_application_record` sa , `swu_variety` sv , `swu_companyinfo` sc , `swu_subbase` ss
+				where `sa`.variety_id = `sv`.variety_id 
+					and `sa`.companyinfo_id = `sc`.companyinfo_id
+						and `sa`.subbase_id = `ss`.subbase_id
+							and `sa`.trace_source = #{traceSource}
+		
+	</select>
+	
+	
+	<select id="queryTraceCheck" resultType="com.swuorange.dto.TraceCheckDTO">
+	
+		select  `sa`.bacth_id,`sa`.application_code,`sa`.apply_time,`sa`.type,
+				`sv`.variety,
+				`sc`.company_name,
+				`ss`.subbase_name,
+				`su`.realname 
+			from `swu_application_record` sa , 
+					`swu_variety` sv , 
+					`swu_companyinfo` sc , 
+					`swu_subbase` ss,
+					`swu_user` su
+				where `sa`.variety_id = `sv`.variety_id 
+					and `sa`.companyinfo_id = `sc`.companyinfo_id
+						and `sa`.subbase_id = `ss`.subbase_id
+							and `sa`.user_id = `su`.user_id
+							
+		
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

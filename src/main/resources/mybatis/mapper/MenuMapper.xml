@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.swuorange.dao.MenuMapper" >
+ 
+ <select id="queryBaseMenu" resultType="com.swuorange.dto.MenuDTO" >
+ 	SELECT m.`menu_id` menuId,m.`menu_name` menuName FROM swu_user s
+	JOIN swu_userrole ur ON s.`user_id` = ur.`user_id`
+	JOIN swu_rolemenu rm ON  ur.`role_id` = rm.`role_id`
+	JOIN swu_menu m ON rm.`menu_id` = m.`menu_id`
+	WHERE s.`user_id` = #{userID} AND pid = 0
+ </select> 
+ <select id="querySubMenu" resultType="com.swuorange.po.Menu" >
+ 	SELECT m.`menu_id` menuId,m.`menu_name` menuName, m.`url` url,m.`page_url` pageUrl FROM swu_user s
+	JOIN swu_userrole ur ON s.`user_id` = ur.`user_id`
+	JOIN swu_rolemenu rm ON  ur.`role_id` = rm.`role_id`
+	JOIN swu_menu m ON rm.`menu_id` = m.`menu_id`
+	WHERE s.`user_id` = #{userId} AND pid = #{pid}
+ </select> 
+ 
+ <select id="queryMenus" resultType="com.swuorange.po.Menu">
+ 	SELECT 
+	  `menu_id`,
+	  `menu_name`,
+	  `url`,
+	  `pid`,
+	  `page_url` 
+	FROM
+	  `swu_menu`
+ </select>
+ 
+ 
+ <select id="queryMenusByRoles" resultType="com.swuorange.po.Menu" parameterType="com.swuorange.po.Role">
+ 	SELECT * FROM`swu_role` r
+	JOIN `swu_rolemenu` rm ON r.`role_id` = rm.`role_id`
+	JOIN `swu_menu` m ON m.`menu_id` = rm.`menu_id`
+	WHERE r.`role_id` = #{id}
+ </select>
+ 
+</mapper>

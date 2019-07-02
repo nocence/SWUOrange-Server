@@ -1,0 +1,150 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="renderer" content="webkit|ie-comp|ie-stand">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+		<meta http-equiv="Cache-Control" content="no-siteapp" />
+		<link rel="Bookmark" href="/favicon.ico">
+		<link rel="Shortcut Icon" href="/favicon.ico" />
+		<link rel="stylesheet" type="text/css" href="static/h-ui/css/H-ui.min.css" />
+		<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/H-ui.admin.css" />
+		<link rel="stylesheet" type="text/css" href="lib/Hui-iconfont/1.0.8/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="static/h-ui.admin/skin/default/skin.css" id="skin" />
+		<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/style.css" />
+
+
+		<script src="js/jquery-1.11.3.js"></script>
+		<script src="bootstrap/js/bootstrap.js"></script>
+		<script type="text/javascript" src="js/jsencrypt.min.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="js/axios.min.js"></script>
+		<script src="layer/layer.js"></script>
+		<script type="text/javascript" src="laydate/laydate.js"></script>
+		<script type="text/javascript" src="js/swuorange-common.js"></script>
+		<link rel="stylesheet" href="bootstrap/css/bootstrap.css" />
+		<link rel="stylesheet" href="bootstrap/css/bootstrap-theme.css" />
+		<script type="text/javascript" src="js/fileinput.js"></script>
+		<link href="css/fileinput.css" media="all" rel="stylesheet" type="text/css" />
+
+
+		<title>供应列表</title>
+		<style type="text/css">
+			.modal-backdrop {
+				z-index: 0;
+			}
+
+		</style>
+		<script type="text/javascript">
+			$(function() {
+				
+			})
+		</script>
+
+	</head>
+	<body>
+		<nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 溯源码申请管理 <span
+			 class="c-gray en">&gt;</span>
+			溯源码审批<a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);"
+			 title="刷新"><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+		<div class="page-container" id="base-app">
+
+			<div class="text-c">
+				<form class="form-inline">
+					 <input  type="text" class="input-text" style="width:250px" placeholder="搜索申请号"> 
+					<button  type="button" class="btn btn-success">
+						<i class="Hui-iconfont">&#xe665;</i> 搜一下
+					</button>
+
+				</form>
+			</div>
+			<div class="cl pd-5 bg-1 bk-gray mt-20"> <span class="r">共有数据：<strong>{{traces.length}}</strong> 条</span> </div>
+			<table class="table table-border table-bordered table-bg">
+				<thead>
+					<tr>
+						<th scope="col" colspan="12">溯源码申请列表</th>
+					</tr>
+					<tr class="text-c">
+						<th width="40">序号</th>
+						<th width="60">溯源申请码</th>
+						<th width="80">场地</th>
+						<th width="40">批次号</th>
+						<th width="40">申请人</th>
+						<th width="40">申请时间</th>
+						<th width="40">品种名</th>
+						<th width="80">所属公司</th>
+						<th width="60">审核状态</th>
+						<th width="70">操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="(trace,index) in traces" class="text-c">
+						<td>{{index+1}}</td>
+						<td>{{trace.applicationCode}}</td>
+						<td>{{trace.subbaseName}}</td>
+						<td>{{trace.bacthId}}</td>
+						<td>{{trace.realname}}</td>
+						<td>{{trace.applyTime}}</td>
+						<td>{{trace.variety}}</td>
+						<td>{{trace.companyName}}</td>
+						<td>
+							<div v-if="trace.type===2"><span class="label label-success radius">已通过</span></div>
+							<div v-else-if="trace.type===1"><span class="label label-primary radius">待审核</span></div>
+							<div v-else><span class="label label-default radius">未通过</span></div>
+						</td>
+						<td class="td-manage" v-if="trace.type ==1 ">
+							<a data-toggle="modal" @click="addType(2,trace.applicationId)"  title="通过"  class="ml-5" style="text-decoration:none">
+								<span class="glyphicon glyphicon-ok"></span>
+							</a>
+							<a data-toggle="modal" @click="addType(0,trace.applicationId)"  title="拒绝" class="ml-5" style="text-decoration:none">
+							 	<span class="glyphicon glyphicon-remove"></span>
+							 </a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+		</div>
+
+		<!--请在下方写此页面业务相关的脚本-->
+		<script type="text/javascript" src="lib/My97DatePicker/4.8/WdatePicker.js"></script>
+
+		<script type="text/javascript">
+			var vm = new Vue({
+				el: "#base-app",
+				data: {
+					traces:[],
+					trace:{}
+				},
+				created: function() {
+					sendAxios(
+						"trace/searchTraceCheck",
+						{}
+					).then(res => {
+					    this.traces = res.data;
+					}, err => {
+						console.log(res.data);
+					});
+				},
+				methods: {
+					addType: function(val, id) {
+						this.trace.type = val;
+						this.trace.applicationId = id;
+						sendAxios(
+							'trace/checkTrace',
+							this.trace
+						).then(res => {
+							if(res.data.code==200){
+								layer.msg('添加成功！',{icon:1,time:1000});						
+							}else if(res.data.code==400) {
+								layer.msg("添加失败！",{icon:1,time:1000});
+							}
+						})
+					}
+				}
+
+			})
+		</script>
+	</body>
+</html>

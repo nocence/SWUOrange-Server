@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.swuorange.dao.UserMapper">
+	<!-- <resultMap id="BaseResultMap" type="com.swuorange.po.User" > <id column="user_id" 
+		property="userId" jdbcType="INTEGER" /> <result column="account" property="account" 
+		jdbcType="VARCHAR" /> <result column="password" property="password" jdbcType="VARCHAR" 
+		/> <result column="realname" property="realname" jdbcType="VARCHAR" /> <result 
+		column="tel" property="tel" jdbcType="VARCHAR" /> <result column="email" 
+		property="email" jdbcType="VARCHAR" /> <result column="regist_time" property="registTime" 
+		jdbcType="TIMESTAMP" /> <result column="update_time" property="updateTime" 
+		jdbcType="TIMESTAMP" /> <result column="total_account" property="totalAccount" 
+		jdbcType="DECIMAL" /> <result column="balance" property="balance" jdbcType="DECIMAL" 
+		/> <result column="role_id" property="roleId" jdbcType="INTEGER" /> <result 
+		column="companyinfo_id" property="companyinfoId" jdbcType="INTEGER" /> </resultMap> -->
+	<select id="queryUserByAccountPassword" resultType="com.swuorange.po.User"
+		parameterType="com.swuorange.dto.UserDTO">
+		SELECT
+		`user_id`,
+		`account`,
+		`password`,
+		`realname`,
+		`companyinfo_id`
+		FROM
+		`swu_user`
+		where
+		account=#{account} and password=#{password}
+	</select>
+	<select id="queryRoleName" resultType="com.swuorange.dto.UserDTO">
+		SELECT r.`role_name` FROM swu_userrole ur
+		JOIN swu_role r ON ur.`role_id` = r.`role_id`
+		WHERE ur.`user_id` = #{id}
+	</select>
+
+</mapper>

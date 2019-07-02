@@ -1,0 +1,18 @@
+package com.swuorange.util;
+
+/*
+ * 
+* @Description: 用于存储RSA公钥与私钥
+*
+* @version: v1.0.0
+* @author: Randy
+* @date: 2019年2月28日 下午10:11:58
+ */
+public interface Key {
+	//公钥
+	public static final String PRIVATEKEY = "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAI9XUEzRg6yt9AhtgOTPKqzG3AhBPYRNgCyR9QPGXtE19kAAkZXEoPYoDId0C/lthEsp6MC89QG6VIgjjmkzuJYrgVvQPlg2iZW1wxiKMafYH2+6Yq0vEHE5ACS3lVVUkTbO7oOPVL8gaGB2R0HAu+aezKiCuYUhboCpGc5X8mQtAgMBAAECgYBbyp4xkzmvKvZLL1SLMd8yJWZiIuUyBC9AW3d7o1y0vMmk0rhoIDKzb5IWa8n/QJKnT38tbdO394qKY7qew/A/xKS4FU/7EDgpd/nx41JPu0dO9CpUCIsxasVmUv+vBbkMzHF0qZM+L1Qh21PWM9ZPbMKuJJNTKJ7zjXmQQ4x2QQJBAMhlP/KTQosiZfQJpLmwVHuCAHn/rOGpt95/Y+Pgy8qvhc6scfglPo2oM1PlMBNxY2VJRKb326JAld1yNYNGUa8CQQC3HUzMihgbuAlNXdhbdZhg3cl1t1+jY9U67+kub1Psmgn6Hrs/GpGjIg9ewvmF+vM/piqGJ2jpWnH9pHzWcurjAkEAnl0dVwa27JsndN52FeRaLyyCUecSaVclHikP+JK6mhdxp+0xN8e/ElVdEqyo/IR75xwqq8RuBmABzvmlfnOAswJBAKttSLqsBYndrwe49ZYZ7z+wIqyLsYNbMQJuG5UXMDBuvSxlnNKk4vcgKdeDHOqrVxKdU24ocvUTcWgNl7mD+BUCQFifIe9mpq0ByuiT92+fY0TfqSP2u+nK9aYPqEobiB+wkizE/TG0HIKFJoHD9Iydt+cPyuFBao/tC3/07b7jwqA=";
+	//私钥
+	public static final String PUBLICKEY = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCPV1BM0YOsrfQIbYDkzyqsxtwIQT2ETYAskfUDxl7RNfZAAJGVxKD2KAyHdAv5bYRLKejAvPUBulSII45pM7iWK4Fb0D5YNomVtcMYijGn2B9vumKtLxBxOQAkt5VVVJE2zu6Dj1S/IGhgdkdBwLvmnsyogrmFIW6AqRnOV/JkLQIDAQAB";
+	
+	public static final String KEY = "swuOrange";
+}

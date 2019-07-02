@@ -1,0 +1,173 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+<link rel="Bookmark" href="/favicon.ico">
+<link rel="Shortcut Icon" href="/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="static/h-ui/css/H-ui.min.css" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/H-ui.admin.css" />
+<link rel="stylesheet" type="text/css" href="lib/Hui-iconfont/1.0.8/iconfont.css" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/skin/default/skin.css" id="skin" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/style.css" />
+<link rel="stylesheet" type="text/css" href="css/layui.css" />
+<link rel="stylesheet" href="bootstrap/css/bootstrap.css" />
+<link rel="stylesheet" href="bootstrap/css/bootstrap-theme.css" />
+<link rel="stylesheet" type="text/css"href="css/fileinput.css" media="all" />
+<title>列表总览</title>
+<style type="text/css">
+	.modal-backdrop {
+		z-index: 0;
+	}
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 溯源管理 <span class="c-gray en">&gt;</span> 资讯列表 <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+<div class="page-container" id="traceTable">
+	<div class="text-c">
+		<input v-model="search.bacthId" type="text" name="" id="" placeholder=" 批次号" style="width:250px" class="input-text">
+		<button @click="getlist()" name="" id="" class="btn btn-success" type="submit"><i class="Hui-iconfont">&#xe665;</i> 搜批次</button>
+	</div>
+	<div class="cl pd-5 bg-1 bk-gray mt-20"> 
+		<span class="l">
+			<a class="btn btn-primary radius" data-title="添加申请" data-href="tracings-add.html" onclick="Hui_admin_tab(this)">
+				<i class="Hui-iconfont">&#xe600;</i>添加申请
+			</a>
+		</span>
+		<span class="r">共有数据：<strong>{{traces.length}}</strong> 条</span> 
+	</div>
+	<div class="mt-20">
+		<table class="table table-border table-bordered table-bg table-hover table-sort table-responsive">
+			<thead>
+				<tr class="text-c">
+					<th width="25"><input type="checkbox" name="" value=""></th>
+					<th width="160">申请号</th>
+					<th width="160">批次号</th>
+					<th width="150">产品类型</th>
+					<th width="180">出产场地</th>
+					<th width="120">更新时间</th>
+					<th width="60">审核状态</th>
+					<th width="180">溯源码</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="text-c" v-for="(trace,index) in traces">
+					<td><input type="checkbox" value="" name=""></td>
+					<td>{{trace.applicationCode}}</td>
+					<td>{{trace.bacthId}}</td>
+					<td>{{trace.variety}}</td>
+					<td>{{trace.subbaseName}}</td>
+					<td>{{trace.reviewTime}}</td>
+					<td class="td-status">
+						<div v-if="trace.type===2"><span class="label label-success radius">已通过</span></div>
+						<div v-else-if="trace.type===1"><span class="label label-primary radius">待审核</span></div>
+						<div v-else><span class="label label-default radius">未通过</span></div>
+					</td>
+					<td>{{trace.traceSource}}</td>
+				</tr>
+				
+			</tbody>
+		</table>
+	</div>
+	
+	<!-- 分页组件  -->
+	<div class = "col-md-offset-5 col-lg-offset-5 col-xl-offset-5">
+		  <ul class="pagination pagination-centered">
+		    <li>
+		        <span aria-hidden="true">首页</span>
+		      </a>
+		    </li>
+		     <li>
+				<span aria-hidden="true">1</span>
+		    <li>
+		        <span aria-hidden="true">尾页</span>
+		      </a>
+		    </li>
+		  </ul>
+	</div>
+	
+	
+</div>
+<!--_footer 作为公共模版分离出去-->
+<script type="text/javascript" src="js/jquery-1.11.3.js"></script> 
+<script type="text/javascript" src="lib/layer/2.4/layer.js"></script>
+<script type="text/javascript" src="static/h-ui/js/H-ui.min.js"></script> 
+<script type="text/javascript" src="static/h-ui.admin/js/H-ui.admin.js"></script> <!--/_footer 作为公共模版分离出去-->
+
+<!-- 引入Vue -->
+<script type="text/javascript" src="js/jsencrypt.min.js"></script>
+<script type="text/javascript" src="js/vue-resource.min.js"></script>
+<script type="text/javascript" src="js/vue.js"></script>
+<script type="text/javascript" src="js/axios.min.js"></script>
+<script type="text/javascript" src="js/swuorange-common.js"></script>
+<script type="text/javascript" src="js/layer.js"></script>
+
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="lib/My97DatePicker/4.8/WdatePicker.js"></script> 
+<script type="text/javascript" src="lib/datatables/1.10.0/jquery.dataTables.min.js"></script> 
+<script type="text/javascript" src="lib/laypage/1.2/laypage.js"></script>
+<script type="text/javascript">
+	
+	var ve = new Vue({
+        el: "#traceTable",
+        data: {
+            traces: [],
+            trace:{},
+			realname:{},
+			search:{}
+        },
+        created: function () {
+            sendAxios(
+				"trace/searchTrace",
+				{}
+			).then(res => {
+                this.traces = res.data;
+            }, err => {
+            	console.log(res.data);
+            });
+            sendAxios(
+				"trace/searchRealname",
+				{}
+			).then(res => {
+                this.realname = res.data;
+            }, err => {
+            	console.log(res.data);
+            });
+        },
+        methods:{
+        	/* 通过条件查询申请list */
+			getlist:function(){
+				sendAxios(
+	                'trace/searchTraceBlur',
+	                this.search
+            	).then(res => {
+                	this.trace = res.data;
+           		})
+			},
+			
+        }
+    })
+    
+   /*  $(document).ready(function() {
+		$("#test-upload").fileinput({
+			'theme': 'fas',
+			'showPreview': false,
+			'allowedFileExtensions': ['jpg', 'png', 'gif'],
+			'elErrorContainer': '#errorBlock'
+		}); 
+		$("#kv-explorer").fileinput({
+			'theme': 'explorer-fas',
+			'uploadUrl': '#',
+			overwriteInitial: false,
+			initialPreviewAsData: true,
+		});
+	}); */
+
+
+</script> 
+</body>
+</html>

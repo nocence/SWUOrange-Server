@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  
+<mapper namespace="com.swuorange.dao.RecordMapper">
+	<!-- 生产记录者只能查询当前基地 -->
+	<select id="allRecordsByUserId" resultType="Integer">
+		select count(*) from swu_production_records spr
+		where 1=1
+		<!-- 条件查询后期再加 -->
+		<if test="record.batchNum!=null and record.batchNum!=''">
+			and spr.product_batch_num = #{record.batchNum}
+		</if>
+		<if test="record.startTime !=null and record.startTime!=''">
+			<![CDATA[  and DATE_FORMAT(spr.`date_time`, '%Y-%m-%d')>=  DATE_FORMAT(#{record.startTime}, '%Y-%m-%d') ]]> 
+		</if>
+		<if test="record.endTime != null and record.endTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(spr.date_time, '%Y-%m-%d') <= DATE_FORMAT(#{record.endTime}, '%Y-%m-%d')  ]]>
+		</if>
+		and spr.user_id=#{user.userId}
+	
+	</select>
+	<select id="listRecordsByUserId" resultType="com.swuorange.po.Record">
+		select spr.production_records_id recordId,spb.product_batch_num batchNum,
+			ss.subbase_name subbaseName,sv.variety variety,sp.product_type productType,
+			su.realname realName,spr.operate operate,spr.date_time doTime,spr.production_details operateDetail
+			from swu_production_records spr
+			join swu_product_batch spb on spr.product_batch_num = spb.product_batch_num
+			join swu_subbase ss on spb.subbase_id = ss.subbase_id
+			join swu_variety sv on spb.variety_id = sv.variety_id
+			join swu_product sp on sv.product_id = sp.product_id
+			join swu_user su on spr.user_id = su.user_id
+			where 1 = 1
+			<if test="record.batchNum!=null and record.batchNum!=''">
+			and spr.product_batch_num = #{record.batchNum}
+			</if>
+			<if test="record.startTime !=null and record.startTime!=''">
+				<![CDATA[  and DATE_FORMAT(spr.`date_time`, '%Y-%m-%d')>=  DATE_FORMAT(#{record.startTime}, '%Y-%m-%d') ]]> 
+			</if>
+			<if test="record.endTime != null and record.endTime != '' ">
+			    <![CDATA[  and DATE_FORMAT(spr.date_time, '%Y-%m-%d') <= DATE_FORMAT(#{record.endTime}, '%Y-%m-%d')  ]]>
+			</if>
+			and spr.user_id=#{user.userId}
+	</select>
+	<!-- 企业用户可以查询当前公司名下所有的记录 -->
+	<select id="allRecordsByCompanyInfoId" resultType="Integer">
+		select count(*) 
+			from swu_production_records spr
+			join swu_product_batch spb on spr.product_batch_num = spb.product_batch_num
+			join swu_secondary_staff sss on sss.subbase_id = spb.subbase_id
+			where 1=1 
+			<if test="record.batchNum!=null and record.batchNum!=''">
+			and spr.product_batch_num = #{record.batchNum}
+			</if>
+			<if test="record.startTime !=null and record.startTime!=''">
+				<![CDATA[  and DATE_FORMAT(spr.`date_time`, '%Y-%m-%d')>=  DATE_FORMAT(#{record.startTime}, '%Y-%m-%d') ]]> 
+			</if>
+			<if test="record.endTime != null and record.endTime != '' ">
+			    <![CDATA[  and DATE_FORMAT(spr.date_time, '%Y-%m-%d') <= DATE_FORMAT(#{record.endTime}, '%Y-%m-%d')  ]]>
+			</if>
+			and sss.user_id !="" and sss.companyinfo_id = 
+			(select companyinfo_id from swu_user where user_id=1);
+	</select>
+	<select id="listRecordsByCompanyInfoId" resultType="com.swuorange.po.Record">
+		select spr.production_records_id recordId,spb.product_batch_num batchNum,
+			ss.subbase_name subbaseName,sv.variety variety,sp.product_type productType,
+			su.realname realName,spr.operate operate,spr.date_time doTime,spr.production_details operateDetail
+			from swu_production_records spr
+			join swu_product_batch spb on spr.product_batch_num = spb.product_batch_num
+			join swu_secondary_staff sss on sss.subbase_id = spb.subbase_id
+			join swu_user su on sss.user_id = su.user_id
+			join swu_subbase ss on spb.subbase_id = ss.subbase_id
+			join swu_variety sv on spb.variety_id = sv.variety_id
+			join swu_product sp on sv.product_id = sp.product_id
+			where 1 = 1
+			<if test="record.batchNum!=null and record.batchNum!=''">
+			and spr.product_batch_num = #{record.batchNum}
+			</if>
+			<if test="record.startTime !=null and record.startTime!=''">
+				<![CDATA[  and DATE_FORMAT(spr.`date_time`, '%Y-%m-%d')>=  DATE_FORMAT(#{record.startTime}, '%Y-%m-%d') ]]> 
+			</if>
+			<if test="record.endTime != null and record.endTime != '' ">
+			    <![CDATA[  and DATE_FORMAT(spr.date_time, '%Y-%m-%d') <= DATE_FORMAT(#{record.endTime}, '%Y-%m-%d')  ]]>
+			</if>
+			and sss.user_id !="" and sss.companyinfo_id = 
+			(select companyinfo_id from swu_user where user_id=#{user.userId})
+			limit #{page.beginIndex},#{page.everyPage}
+	</select>
+	<select id="allBatchNumByUserId" resultType="com.swuorange.po.Record" parameterType="com.swuorange.po.User">
+		select product_batch_num batchNum
+			from swu_product_batch spb 
+			where spb.subbase_id = 
+			(select subbase_id from swu_secondary_staff sss where sss.user_id=#{userId})
+	</select>
+	<select id="byBatchNum" resultType="com.swuorange.po.Record" parameterType="com.swuorange.po.Record">
+		select sv.variety variety,sp.product_type productType
+			from swu_product_batch spb 
+			join swu_variety sv on spb.variety_id = sv.variety_id
+			join swu_product sp on sv.product_id = sp.product_id
+		where spb.product_batch_num=#{batchNum};
+	</select>
+</mapper>

@@ -1,0 +1,80 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 配置对应的mapper映射文件 -->
+<mapper namespace="com.swuorange.dao.QualityMapper">
+	<!-- id 要改成对应的mapper文件中方法名 resultType 要改成对应的返回值类型 -->
+	
+
+	<select id="countQuality" parameterType="com.swuorange.dto.QualityDTO" resultType="java.lang.Integer" >
+     
+     	select count(*) from swu_quality_inspection where
+	        	 requester_id = #{requesterId,jdbcType=INTEGER}
+    </select>
+
+    <select id="queryQualityList" parameterType="com.swuorange.util.PagerHelper" resultType="com.swuorange.dto.QualityInfo">
+     	
+    	SELECT q.quality_id quality_id,q.request_name request_name,v.variety variety ,
+			a.adminname adminname,q.apply_time apply_time,
+			q.review_time review_time,q.state state ,
+			u.realname realname ,s.subbase_name subbase_name,
+			s.production_recorder recordername
+				FROM swu_quality_inspection q 
+					JOIN swu_product_batch b on q.batch_id=b.product_batch_num
+					JOIN swu_variety v ON b.variety_id=v.variety_id
+					JOIN swu_subbase s ON b.subbase_id = s.subbase_id
+					JOIN swu_admin a ON q.manager_id = a.admin_id
+					JOIN swu_user u ON q.requester_id = u.user_id	
+						WHERE q.requester_id=#{requesterId,jdbcType=INTEGER} 	
+	     	 				limit #{startrownumber} ,#{limit}
+    </select>
+    
+    <select id="queryQualityByName" parameterType="com.swuorange.dto.QualityDTO" resultType="com.swuorange.dto.QualityInfo">
+     	
+    	SELECT q.quality_id quality_id,q.request_name request_name,v.variety variety ,
+			a.adminname adminname,q.apply_time apply_time,
+			q.review_time review_time,q.state state ,
+			u.realname realname ,s.subbase_name subbase_name,
+			s.production_recorder recordername
+				FROM swu_quality_inspection q 
+					JOIN swu_product_batch b on q.batch_id=b.product_batch_num
+					JOIN swu_variety v ON b.variety_id=v.variety_id
+					JOIN swu_subbase s ON b.subbase_id = s.subbase_id
+					JOIN swu_admin a ON q.manager_id = a.admin_id
+					JOIN swu_user u ON q.requester_id = u.user_id	
+						WHERE request_name LIKE CONCAT(CONCAT('%',#{requestName},'%'))
+    </select>
+    <!--根据二级基地的id查询生产记录着  -->
+   
+    <select id="querySubbaseById" parameterType="com.swuorange.po.Subbase" resultType="com.swuorange.po.Subbase" >
+     
+     	select * from swu_subbase where
+	        	subbase_name = #{subbaseName,jdbcType=VARCHAR}
+    </select>
+
+     <select id="showQuality" parameterType="com.swuorange.dto.QualityDTO" resultType="com.swuorange.dto.QualityInfo">
+     	SELECT q.quality_id quality_id, q.request_name request_name,v.variety variety ,b.product_batch_num batch_num,
+			a.adminname adminname,a.tel tel,q.apply_time apply_time,
+			q.review_time review_time,q.state state, 
+			u.realname realname ,s.subbase_name subbase_name,s.subbase_address subbase_address,s.production_recorder recordername
+			FROM swu_quality_inspection q 
+				JOIN swu_product_batch b on q.batch_id=b.product_batch_num
+				JOIN swu_variety v ON b.variety_id=v.variety_id
+				JOIN swu_subbase s ON b.subbase_id = s.subbase_id
+				JOIN swu_admin a ON q.manager_id = a.admin_id
+				JOIN swu_user u ON q.requester_id = u.user_id
+				WHERE q.requester_id=#{requesterId,jdbcType=INTEGER}
+				and q.quality_id = #{qualityId,jdbcType=INTEGER}
+			     
+     </select>
+
+	  <!-- 添加质量申请 -->
+	  <insert id="addQuality"  parameterType="com.swuorange.dto.QualityDTO">
+	  	insert into swu_quality_inspection (
+	  		iso,cac,recorder_id,batch_id,requester_id,manager_id,apply_time,review_time,state,request_name
+	  	)values(
+	  		#{iso},#{cac},#{recorderId},#{batchId},#{requesterId},#{managerId},
+	  		#{applyTime},#{reviewTime},#{state},#{requestName}
+	  	)
+	  </insert>
+	
+</mapper>

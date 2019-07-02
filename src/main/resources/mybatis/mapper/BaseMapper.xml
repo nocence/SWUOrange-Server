@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.swuorange.dao.BaseMapper">
+
+
+	<select id="queryTotalCount" resultType="java.lang.Integer"
+		parameterType="com.swuorange.dto.BaseSearchDTO">
+		SELECT COUNT(b.`base_id`) FROM `swu_base` b
+		JOIN `swu_companyinfo` c ON b.`companyinfo_id`=c.`companyinfo_id`
+		JOIN `swu_staffs` s ON b.`base_header_id` = s.`staff_id`
+		JOIN `swu_user` u ON u.`companyinfo_id` = c.`companyinfo_id`
+		WHERE u.`user_id` = #{userId}
+		<if test="startTime != null and startTime != '' ">
+			<![CDATA[   and DATE_FORMAT(b.`add_time`, '%Y-%m-%d')>=  DATE_FORMAT(#{startTime}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="endTime != null and endTime != '' ">
+			<![CDATA[  and DATE_FORMAT(b.`add_time`, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d')  ]]>
+		</if>
+		<if test="baseName != null and baseName != '' ">
+			AND b.`base_name` LIKE CONCAT(CONCAT('%',#{baseName},'%'))
+		</if>
+
+	</select>
+
+
+	<select id="queryBasesBy" resultType="com.swuorange.dto.BaseDTO"
+		parameterType="com.swuorange.dto.DemandSearchDTO">
+		SELECT c.`company_name`,b.*,s.`staff_name` FROM `swu_base` b
+		JOIN `swu_companyinfo` c ON b.`companyinfo_id`=c.`companyinfo_id`
+		JOIN `swu_staffs` s ON b.`base_header_id` = s.`staff_id`
+		JOIN `swu_user` u ON u.`companyinfo_id` = c.`companyinfo_id`
+		WHERE u.`user_id` = #{userId}
+		<if test="startTime != null and startTime != '' ">
+			<![CDATA[   and DATE_FORMAT(b.`add_time`, '%Y-%m-%d')>=  DATE_FORMAT(#{startTime}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="endTime != null and endTime != '' ">
+			<![CDATA[  and DATE_FORMAT(b.`add_time`, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d')  ]]>
+		</if>
+		<if test="baseName != null and baseName != '' ">
+			AND b.`base_name` LIKE CONCAT(CONCAT('%',#{baseName},'%'))
+		</if>
+		ORDER BY b.`add_time` ASC
+		LIMIT #{start},#{end}
+	</select>
+
+
+
+	<select id="queryStuffsLikeName" resultType="com.swuorange.dto.Staff"
+		parameterType="com.swuorange.dto.Staff">
+		SELECT
+		`staff_id`,
+		`staff_name`,
+		`staff_password`,
+		`staff_sex`,
+		`staff_age`,
+		`staff_tel`,
+		`staff_email`,
+		`companyinfo_id`
+		FROM
+		`swu_staffs`
+		WHERE companyinfo_id = #{companyinfoId}
+		AND staff_name LIKE CONCAT(CONCAT('%',#{staffName},'%'))
+	</select>
+
+</mapper>
+

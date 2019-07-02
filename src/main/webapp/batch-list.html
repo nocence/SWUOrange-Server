@@ -1,0 +1,316 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+<link rel="Bookmark" href="/favicon.ico" >
+<link rel="Shortcut Icon" href="/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="static/h-ui/css/H-ui.min.css" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/H-ui.admin.css" />
+<link rel="stylesheet" type="text/css" href="lib/Hui-iconfont/1.0.8/iconfont.css" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/skin/default/skin.css" id="skin" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/style.css" />
+<title>生产批次列表</title>
+</head>
+<body>
+<nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 产品批次管理 <span class="c-gray en">&gt;</span> 产品批次总览<a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+<div class="page-container" id="batch">
+	<div class="text-c"> 
+		<input type="text" class="input-text" style="width:250px" placeholder="输入生产批次号" v-model="batch.batchNum">
+		<button type="button"  @click="query()" class="btn btn-success" ><i class="Hui-iconfont">&#xe665;</i> 点击搜索批次</button>
+	</div>
+	<div class="cl pd-5 bg-1 bk-gray mt-20"> 
+		<span class="l">
+			<button class="btn btn-primary radius" data-toggle="modal" data-target="#myBase" @click="queryBatchTypes()"><i class="Hui-iconfont">&#xe600;</i> 添加产品批次</button> 
+		</span> 
+	</div>
+	<table class="table table-border table-bordered table-bg">
+		<thead>
+			<tr>
+				<th scope="col" colspan="10">批次列表</th>
+			</tr>
+			<tr class="text-c">
+				<th width="25"><input type="checkbox" name="" value=""></th>
+				<th width="40">序号</th>
+				<th width="150">批次编号</th>
+				<th width="200">产品名称</th>
+				<th width="80">产品类型</th>
+				<th width="80">数量</th>
+				<th width="130">单位</th>
+				<th width="150">所属生产单位</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr class="text-c" v-for="(i,index) in batchs">
+				<td><input type="checkbox" value="1" name=""></td>
+				<td>{{index+1}}</td>
+				<td>{{i.batchNum}}</td>
+				<td>{{i.productName}}</td>
+				<td>{{i.productType}}</td>
+				<td>{{i.productNum}}</td>
+				<td>{{i.unit}}</td>
+				<td>{{i.subbaseName}}</td>
+			</tr>
+		</tbody>
+	</table>
+	
+	<!-- 分页组件 -->
+	<div class="ui_tb_h30" style="float:right ">
+		<div class="ui_flt" style="height: 30px; line-height: 30px;" >
+		共有<span class="ui_txt_bold04">{{totalData}}</span>
+		条记录，当前第<span class="ui_txt_bold04">{{batch.nowPage}}/{{totalPage}}</span>页</div>
+		<div class="ui_frt">
+			<!--    如果是第一页，则只显示下一页、尾页 -->
+			<input type="button" value="首页" class="btn ui_input_btn01" @click="firstPage"/>
+			<input type="button" value="上一页" class="btn ui_input_btn01" @click="previousPage"/>
+			<input type="button" value="下一页" class="btn ui_input_btn01" @click="nextPage" />
+			<input type="button" value="尾页" class="btn ui_input_btn01" @click="lastPage" />
+			<!--     如果是最后一页，则只显示首页、上一页 -->
+			转到第<input type="text" id="jumpNumTxt" class="ui_input_txt01" v-model="targets"/>页
+			<input type="button" class="btn ui_input_btn01" value="跳转" @click="turnPage()" />
+		</div>
+	</div>
+	<!-- 新增产品批次的模态框 -->
+	<div class="modal fade" id="myBase" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	    <div class="modal-dialog">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	                <h2 class="modal-title" id="myModalLabel" align="center">产品批次添加</h2>
+	            </div>
+	            <div class="modal-body" >
+	            	<!-- 批次管理编辑区 -->
+	            	<div class="row cl">
+					  <span class="input-group-addon" id="basic-addon1">产品类型</span>
+				  		<select class="select" size="1" v-model="postBatch.productId" @change='getType'>
+				  			<option value="">--请选择--</option>
+							<option :value="p.productId" v-for="p in getFirst">{{p.productType}}</option>
+						</select>
+					</div>
+	            	<div class="row cl">
+					  <span class="input-group-addon" id="basic-addon4">产品名称</span>
+					  	<select class="select" name="adminRole" v-model="postBatch.varietyId" >
+					  		<option value="">--请选择--</option>
+							<option :value="p.varietyId" v-for="p in getThird">{{p.productName}}</option>
+						</select>
+					</div>
+	            	<div class="row cl">
+					  <span class="input-group-addon" id="basic-addon5">产品数量</span>
+					  <input type="text" class="form-control" v-model="postBatch.productNum" placeholder="产品数量" aria-describedby="basic-addon5">
+					</div>
+					<div class="row cl">
+					  <span class="input-group-addon" id="basic-addon3">单位</span>
+					 	<select class="select" name="adminRole"  v-model="postBatch.unit">
+					 		<option value="">--请选择--</option>
+							<option :value="unit" v-for="unit in allUnit">{{unit}}</option>
+							
+						</select>
+					</div>
+					<div class="row cl">
+					  <span class="input-group-addon" id="basic-addon3">生产单位</span>
+					  	<select class="select" name="adminRole" v-model="postBatch.subbaseId" >
+					  		<option value="">--请选择--</option>
+							<option :value="p.subbaseId" v-for="p in getSecond">{{p.subbaseName}}</option>
+						</select>
+					</div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+	                <button type="button" class="btn btn-primary" @click="add()">添加</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	<!-- 新增批次后的提示模态框 -->
+	<div class="modal fade" id="mydialog" tabindex="-1" role="dialog" aria-labelledby="mydialog" aria-hidden="true">
+	    <div class="modal-dialog">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h2 class="modal-title" id="myModalLabel">提示</h2>
+	            </div>
+	            <div class="modal-body">{{msg}}</div>
+	            <div class="modal-footer">
+	                <button type="button" @click="mysure()" data-dismiss="modal" class="btn btn-primary">确认</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	
+</div>
+<!--_footer 作为公共模版分离出去-->
+<script type="text/javascript" src="lib/jquery/1.9.1/jquery.min.js"></script> 
+<script type="text/javascript" src="lib/layer/2.4/layer.js"></script>
+<script type="text/javascript" src="static/h-ui/js/H-ui.min.js"></script> 
+<script type="text/javascript" src="static/h-ui.admin/js/H-ui.admin.js"></script> <!--/_footer 作为公共模版分离出去-->
+
+<!-- 引入Vue -->
+<script type="text/javascript" src="js/jsencrypt.min.js"></script>
+<script type="text/javascript" src="js/vue-resource.min.js"></script>
+<script type="text/javascript" src="js/vue.js"></script>
+<script type="text/javascript" src="js/axios.min.js"></script>
+<script type="text/javascript" src="js/swuorange-common.js"></script>
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="lib/My97DatePicker/4.8/WdatePicker.js"></script> 
+<script type="text/javascript" src="lib/datatables/1.10.0/jquery.dataTables.min.js"></script> 
+<script type="text/javascript" src="lib/laypage/1.2/laypage.js"></script>
+<script type="text/javascript">
+	var ve = new Vue({
+        el: "#batch",
+        data: {
+            batchs: [],
+			/*总页数*/
+			totalPage:"",
+			/*记录总数*/
+			totalData:"",
+			/*跳转的目标页*/
+			targets:"",
+			batch:{
+				/*当前页数*/
+				nowPage:1,
+				/*条件查询*/
+				batchNum:"",
+			},
+			allUnit:["吨","株","千克","件","箱","瓶"],
+			/* 新增批次模态框第一次请求获取的List */
+			getFirst:[],
+			getSecond:[],
+			/* 新增批次模态框根据第一次获取的数据作为参数请求获取的List */
+			getThird:[],
+			/* 新增批次模态框提交的对象 */
+			postBatch:{
+				batchNum:"",
+				productId:"",
+				varietyId:"",
+				productNum:"",
+				unit:"",
+				subbaseId:""
+			},
+			/* 后端返回的提示信息 */
+			msg:""
+        },
+     	methods:{
+     		query:function(){
+     			if(this.batch.batchNum==""){
+					this.batch.batchNum=null
+				}
+				sendAxios(
+					"batch/showBatchs",
+					this.batch
+				).then(res=>{
+						this.batchs=res.data.list;
+						this.batch.nowPage=res.data.nowPage;
+						this.totalPage=res.data.totalPage;
+						this.totalData=res.data.totalData;
+						this.targets="";
+				})
+     		},
+     		//点击首页
+			firstPage:function(){
+				this.batch.nowPage=1;
+				this.query();
+				
+			},
+			//点击尾页
+			lastPage:function(){
+				this.batch.nowPage=this.totalPage;
+				this.query();
+			},
+			//点击上一页
+			previousPage:function(){
+				if(this.batch.nowPage== 1){
+					this.batch .nowPage= 1;
+				}else{
+					this.batch .nowPage-= 1;
+				}
+				this.query();
+			},
+			//点击下一页
+			nextPage:function(){
+				if(this.batch.nowPage +1>=this.totalPage){
+					this.batch.nowPage=this.totalPage;
+				}else{
+					this.batch.nowPage +=1;
+				}
+				this.query();
+			},
+     		//跳转页面
+			turnPage:function(){
+				if(this.targets > this.totalPage){
+					this.batch.nowPage=this.totalPage;
+				}else if(this.targets < 1){
+					this.batch.nowPage=1;
+				}else{
+					this.batch.nowPage=this.targets;
+				}
+				this.query();
+			},
+			queryBatchTypes:function(){
+				sendAxios(
+					"batch/getTypeAndSubbase",{}
+				).then(res=>{
+					this.getFirst=res.data.first;
+					this.getSecond=res.data.second;
+				})
+			},
+			/* 模态框获取产品类型后发送ajax获取该类型的产品名 */
+			getType:function(){
+				console.log("已选择："+this.postBatch.productId)
+				sendAxios(
+					"batch/getProductName",
+					this.postBatch
+				).then(res=>{
+					this.getThird=res.data.first;
+				})
+			},
+			/* 用户添加生产批次的请求 */
+			add:function(){
+				sendAxios(
+					"batch/addBatch",
+					this.postBatch
+				).then(res=>{
+					if(res.data.code==200){
+						this.IntervalTimer();
+					}else{
+						$("#mydialog").modal("show");
+						this.msg=res.data.msg;
+					}
+				})
+			},
+			/* 添加批次后发送请求监听MQ的返回消息 */
+			check:function(){
+				sendAxios(
+					"check",{}
+				).then(res=>{
+					if(res.data.code==200){
+						$("#mydialog").modal("show");
+						this.msg="信息添加成功，即将刷新当前页面！";
+					}else if(res.data.code==400){
+						$("#mydialog").modal("show");
+						this.msg="信息添加失败！";
+						this.IntervalTimer();
+					}
+				})
+			},
+			IntervalTimer:function(){
+				setTimeout(this.check(), 2000);
+			},
+			mysure:function(){
+				$("#mydialog").modal("hide");
+				setTimeout(function(){
+							window.location.reload();
+						}, 2000);
+			}
+     	},
+     	created:function(){
+			this.query();
+		}
+    })
+
+
+</script>
+</body>
+</html>

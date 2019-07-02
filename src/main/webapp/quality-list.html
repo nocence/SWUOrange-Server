@@ -1,0 +1,719 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+<link rel="Bookmark" href="/favicon.ico" >
+<link rel="Shortcut Icon" href="/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="static/h-ui/css/H-ui.min.css" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/H-ui.admin.css" />
+<link rel="stylesheet" type="text/css" href="lib/Hui-iconfont/1.0.8/iconfont.css" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/skin/default/skin.css" id="skin" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/style.css" />
+<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.css" />
+
+	<title>申请列表</title>
+	
+	<style>
+	 
+	   .hover{
+	      color:red;
+	      background-color: #00b3f1;
+	    }
+		.selected {
+	            background-color: #00b3f1;
+	    }
+	        
+	    .modal-backdrop{
+			z-index:0;
+		}
+	    
+
+	</style>
+	
+	
+	
+	
+	
+</head>
+<body>
+	<nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 质量申请管理 <span class="c-gray en">&gt;</span> 我的质量管理<a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+	<div class="page-container" id="quality-app">
+		<div class="text-c">
+		 <!-- <span >
+		 	日期范围：
+			</span>  -->
+			<!-- <input type="text" onfocus="WdatePicker({ maxDate:'#F{$dp.$D(\'logmax\')||\'%y-%M-%d\'}' })" id="logmin" class="input-text Wdate" style="width:120px;">			
+			<input type="text" onfocus="WdatePicker({ minDate:'#F{$dp.$D(\'logmin\')}',maxDate:'%y-%M-%d' })" id="logmax" class="input-text Wdate" style="width:120px;"> -->
+			
+			<input type="text" v-model="quality.requestName" name="" id="" placeholder=" 质量检测申请名" style="width:250px" class="input-text">
+			<button name="" id="" v-on:click="queryQualityByName()" data-toggle="modal" data-target="#mydialog" class="btn btn-success" type="submit"><i class="Hui-iconfont">&#xe665;</i> 搜索</button>
+			<button @click="requestQuality()" name="" id="" data-toggle="modal" data-target="#requestFormModal" class="btn btn-primary" type="submit"><i class="Hui-iconfont">&#xe70c;</i> 申请质量检测</button>
+		</div>
+		<!-- <div class="cl pd-5 bg-1 bk-gray mt-20"><span class="r">共有数据：<strong>{{total}}</strong> 条</span> </div> -->
+		<div class="mt-20">
+			<table class="table table-border table-bordered table-bg table-hover table-sort table-responsive">
+				<thead>
+					<tr class="text-c">
+						<th width="25"><input type="checkbox" name="" value=""></th>
+						<th width="80">序号</th>
+						<th>质量检测申请名</th>
+						<th width="80">检测分类</th>						
+						<th width="120">提交申请时间</th>
+						<th width="120">审核时间</th>
+						<th width="80">审核状态</th>
+						<th width="80">审核人</th>
+						<th width="120">查看详情</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class="text-c" v-for="(quality, index) in qualitys" >
+						<td><input type="checkbox"  value="" name=""></td>
+						<td>{{index+1}}</td>
+						<td class="text-l">{{quality.requestName}}</td>
+						<td>{{quality.variety}}</td>						
+						<td>{{quality.applyTime}}</td>
+						<td>{{quality.reviewTime}}</td>
+						<td class="td-status"><span class="label label-success radius">{{check(quality.state)}}</span></td>
+						<td>{{quality.adminName}}</td>
+						<td>
+							<button @click="show(quality)" data-toggle="modal" data-target="#mydetails" class="btn btn-primary radius"  type="submit"><i class="Hui-iconfont">&#xe695;</i> 查看详情</button>
+						</td>
+					</tr>
+					
+				</tbody>
+			</table>
+			
+			
+			<!-- 分页组件开始 -->
+
+			<div class="container">
+            	<div class="row">
+           			<div class="vertical-center btn-lg" >
+           			
+						<button class="btn btn-info" @click="firstPage" >首页</button>
+						<button class="btn btn-info" @click="previousPage" >上一页</button>
+						<button class="btn btn-info" @click="nextPage" >下一页</button>
+						<button class="btn btn-info" @click="lastPage" >尾页</button>
+						<!-- 显示当前页和总页数 -->
+					当前第<span>{{nowPage.nowPage}}/{{totalPages}}</span>页
+						<!--如果是最后一页，则只显示首页、上一页 -->
+					转到第<input type="text"  style="width:60px;" v-model="targets"/>页
+						<input type="button" class="btn btn-info" value="跳转" @click="turnPage()" />
+					</div>
+				</div>
+			</div>
+			<!-- 分页组件结束 -->
+			
+			
+			
+		<!-- 质量申请表 -->
+		<div class="modal fade" id="requestFormModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-body">
+						<div class="page-container">
+												
+								<div class="row cl">
+									<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>质量检测名：</label>
+									<div class="formControls col-xs-8 col-sm-9">
+										<input type="text" class="input-text" value="" v-model="subbase.requestName" placeholder="" id="articletitle" name="articletitle">
+									</div>
+								</div>
+								<div class="row cl">
+									<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>生产批次号：</label>
+									<div class="formControls col-xs-8 col-sm-9">
+										<input type="text" class="input-text" value="" v-model="subbase.batchId" placeholder="" id="articletitle" name="articletitle">
+									</div>
+								</div>								
+								
+								
+								<div class="row cl">
+										
+									<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>ISO：</label>
+									<div class="formControls col-xs-8 col-sm-9">
+										<div class="uploader-thum-container">											
+											<div class="row ">			
+      											<label for="file">请选择需要上传的文件</label>     											
+      											<input type="file" @change="addFile($event)" name="file" id="file"  multiple/>
+											</div>
+											
+											<div v-if="point !=null" class="progress-bar" role="progressbar" aria-valuenow="60"
+												aria-valuemin="0" aria-valuemax="100" :style="{width:point}">
+												{{point}}
+											</div>
+										
+											</div>
+											<div class="row">
+										    	<button @click="uploadFunc()" type="button" id="btn-star" class="btn btn-primary btn-uploadstar radius ml-9">上传</button>
+										    	<!-- <input type="button" @click="stopFunc()" v-model="tishi" id="btn-stop" class="btn btn-warning btn-uploadstar radius ml-9"> -->
+	    	
+											</div>
+										</div>
+									</div>
+									
+								</div>
+								
+								<div class="row cl">
+									<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-2">
+										<button @click="addQuality()" data-toggle="modal" data-target="#mydialog" class="btn btn-success radius" type="button"><i class="Hui-iconfont">&#xe632;</i> 保存并提交审核</button>
+										<button @click="closeAddQuality()" class="btn btn-default radius" type="button">&nbsp;&nbsp;取消&nbsp;&nbsp;</button>
+									</div>
+								</div>
+							
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 质量申请表结束 -->
+		<!--用户操作结束后给用户的弹出框  -->
+		<div  class="modal fade" id="mydialog" tabindex="-1" role="dialog" aria-labelledby="mydialog" aria-hidden="true">
+		    <div class="modal-dialog">
+		        <div class="modal-content">
+		            <div class="modal-header">
+		                <h2 class="modal-title" id="myModalLabel">{{top}}</h2>
+		            </div>
+		            <div class="modal-body">{{msg}}</div>
+		            <div class="modal-footer">
+		                <button type="button" @click="mysure()" data-dismiss="modal" class="btn btn-primary">确认</button>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		
+		
+		
+		
+		<!-- 详细信息显示 -->
+		<!-- 查询详细信息的模态框 -->
+			<div class="modal fade" id="mydetails" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" aria-hidden="true">
+				<div class="modal-dialog modal-lg">
+					<div class="modal-content">
+						<div class="modal-header" style="background-clip: #F5FAFE;">
+							<h5 class="modal-title" id="myModalLabel1">详情</h5>
+						</div>
+						<div class="modal-body" style="height: 500px;overflow: scroll;overflow-x:hidden;">			
+							<div style="width: 90%; margin: auto;">
+								<table class="table table-striped table-hover">
+									<tr>
+										<td width="20%">
+											质量检测申请名称
+										</td>
+										<td>{{someOne.requestName}}</td>
+									</tr>
+									<tr>
+										<td>
+											所属分类
+										</td>
+										<td>{{someOne.variety}}</td>
+									</tr>
+									<tr>
+										<td>
+											申请提交时间
+										</td>
+										<td>{{someOne.applyTime}}</td>
+									</tr>
+									<tr>
+										<td>
+											审批时间
+										</td>
+										<td>{{someOne.reviewTime}}</td>
+									</tr>
+									
+									<tr>
+										<td>
+											批次号
+										</td>
+										<td>{{someOne.batchNum}}</td>
+									</tr>
+									<tr>
+										<td>
+											二级基地名称
+										</td>
+										<td>{{someOne.subbaseName}}</td>
+									</tr>
+									<tr>
+										<td>
+											二级基地地址
+										</td>
+										<td>{{someOne.subbaseAddress}}</td>
+									</tr>
+									<tr>
+										<td>
+											生产记录者
+										</td>
+										<td>{{someOne.recorderName}}</td>
+									</tr>
+									<tr>
+										<td>
+											审核状态
+										</td>
+										<td>{{check(someOne.state)}}</td>
+									</tr>
+									<tr>
+										<td>
+											审批人员名字
+										</td>
+										<td>{{someOne.adminName}}</td>
+									</tr>
+									<tr>
+										<td>
+											审批人联系电话
+										</td>
+										<td>{{someOne.tel}}</td>
+									</tr>
+
+								</table>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+						</div>
+
+					</div>
+				</div>
+			</div>
+		
+		<!--用户操作结束后给用户的弹出框  -->
+		<div  class="modal fade" id="mydialog" tabindex="-1" role="dialog" aria-labelledby="mydialog" aria-hidden="true">
+		    <div class="modal-dialog">
+		        <div class="modal-content">
+		            <div class="modal-header">
+		                <h2 class="modal-title" id="myModalLabel">{{top}}</h2>
+		            </div>
+		            <div class="modal-body">{{msg}}</div>
+		            <div class="modal-footer">
+		                <button type="button" @click="mysure()" data-dismiss="modal" class="btn btn-primary">确认</button>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		
+			
+			
+			
+			
+		</div>
+	</div>
+	
+	
+<!--_footer 作为公共模版分离出去-->
+<script type="text/javascript" src="js/jquery-1.11.3.js"></script>
+<script type="text/javascript" src="js/vue.js"></script>
+<script type="text/javascript" src="js/jq-paginator.js"></script> 
+<script type="text/javascript" src="lib/layer/2.4/layer.js"></script>
+<script type="text/javascript" src="static/h-ui/js/H-ui.min.js"></script> 
+<script type="text/javascript" src="static/h-ui.admin/js/H-ui.admin.js"></script> <!--/_footer 作为公共模版分离出去-->
+
+<script type="text/javascript" src="bootstrap/js/fileinput.js"></script>
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="lib/My97DatePicker/4.8/WdatePicker.js"></script> 
+<script type="text/javascript" src="lib/datatables/1.10.0/jquery.dataTables.min.js"></script> 
+<script type="text/javascript" src="lib/laypage/1.2/laypage.js"></script>
+
+<script type="text/javascript" src="js/axios.min.js"></script>
+<script type="text/javascript" src="js/jsencrypt.min.js"></script>
+<script type="text/javascript" src="js/swuorange-common.js"></script>
+
+
+
+<script type="text/javascript">
+
+
+/* $('.table-sort').dataTable({
+	"aaSorting": [[ 1, "desc" ]],//默认第几个排序
+	"bStateSave": true,//状态保存
+	"pading":false,
+	"aoColumnDefs": [
+	  //{"bVisible": false, "aTargets": [ 3 ]} //控制列的隐藏显示
+	  {"orderable":false,"aTargets":[0,8]}// 不参与排序的列
+	]
+}); */
+
+/*vue开始  */
+
+	var vm = new Vue({
+		el: "#quality-app",
+		data: {
+			//对象的数据
+			nowPage:{nowPage:1},
+			//总条数
+			total:'',
+			indexId:"",
+			someOne:{},
+			//对象数组
+			qualitys:[],
+			quality:{},
+		 	/*跳转的目标页*/
+			targets:"",
+			//总页数
+			totalPages:"",
+			varietys:[],
+			subBases:[],
+			subbase:{},
+			msg:"",
+			top:"提示!",
+			temp:true,
+			file:"",
+			//文件分割每个1M
+			fileLen:1024 * 1024 * 1,
+			totalSize:"",
+			//是否最后一部分
+			lastUpLoad:false,
+			//已传文件大小
+			upByte:0,
+			//上传文件名
+			fileName:"",
+			supplyInfo: {},
+			startByte:"",
+			//暂停和继续
+			start:0,
+			tishi:"暂停上传",
+			someOne:{},
+			temp:true,
+			
+		},
+		created:function(){
+			this.queryQuality();
+		},
+		methods:{
+		
+			show:function(one){
+				sendAxios(
+					"quality/showQuality",
+					one
+				).then(res=>{
+					if(res.data.code==200){
+						this.someOne = res.data.obj;
+						this.msg = res.data.msg;
+					}else if(res.data.code==400){
+						this.msg = res.data.msg;
+					}
+
+				})
+			
+			
+			
+			
+			
+			},
+		
+		
+		
+			//申请质量检测
+			addQuality:function(){
+				//新增质量申请
+				sendAxios(
+					"quality/addQuality",
+					this.subbase
+				).then(res=>{
+					if(res.data.code==200){
+						
+						this.msg = res.data.msg;
+					}else if(res.data.code==400){
+						this.msg = res.data.msg;
+					}
+					this.closeAddQuality();
+
+				})
+
+			
+			},
+			closeAddQuality:function(){
+			
+				$("#requestFormModal").modal('hide');
+			},
+		
+		
+			//暂停上传
+			stopFunc:function(){
+				if(this.start==0){
+				   this.tishi="继续上传";
+				   this.start = 1;
+		        }else if(this.start==1){
+		        	this.tishi="暂停上传";
+				    this.start = 0;
+		            
+		        }
+		        this.uploadFunc();
+			
+			},
+		
+			addFile:function(event){
+				this.file = event.target.files[0];
+				this.totalSize = this.file.size;
+				this.fileName = this.file.name;
+			
+			
+			},
+
+			uploadFunc:function(){
+				
+				//console.log("获取已传文件大小。。。");
+					//当前上传文件的总大小
+					this.totalSize = this.file.size;
+					//组装一个json对象
+					var encrypt = new JSEncrypt();
+					//设置公钥
+					encrypt.setPublicKey(
+						"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCPV1BM0YOsrfQIbYDkzyqsxtwIQT2ETYAskfUDxl7RNfZAAJGVxKD2KAyHdAv5bYRLKejAvPUBulSII45pM7iWK4Fb0D5YNomVtcMYijGn2B9vumKtLxBxOQAkt5VVVJE2zu6Dj1S/IGhgdkdBwLvmnsyogrmFIW6AqRnOV/JkLQIDAQAB"
+					);
+					//获取时间
+					var nowtime = Date.parse(new Date());
+					//获取密码加时间的密钥
+					var mykey = "swuOrange" + "|" + nowtime;
+					//进行编码
+					var m = encrypt.encrypt(mykey);
+					let formData = new FormData();
+					//文件信息
+					formData.append("fileName", this.fileName);
+					formData.append("passSign", m);
+					axios({
+						method : "post", //请求方式
+						url : "MyFile/checkName", //请求地址
+						data : formData,
+						//请求头，很重要，告诉浏览器这是一个文件不是普通请求
+						headers : {
+							"Content-Type" : "multipart/form-data"
+						}
+					}).then(res => { //回调函数
+						//获取已经上传完成的文件大小
+						this.startByte = res.data.obj;
+						console.log(this.startByte);
+						//开始上传文件
+						this.upFunc();
+	
+					})
+
+
+			},
+		
+		
+			upFunc:function(){
+
+				//已完成最后一次上传
+					if (this.lastUpLoad) {
+						//console.log("完成文件上传！");
+						//alert(fileName + "文件上传完成");
+						this.startByte=0;
+						this.file="";
+						return false;
+					}
+					var encrypt = new JSEncrypt();
+					//设置公钥
+					encrypt.setPublicKey(
+						"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCPV1BM0YOsrfQIbYDkzyqsxtwIQT2ETYAskfUDxl7RNfZAAJGVxKD2KAyHdAv5bYRLKejAvPUBulSII45pM7iWK4Fb0D5YNomVtcMYijGn2B9vumKtLxBxOQAkt5VVVJE2zu6Dj1S/IGhgdkdBwLvmnsyogrmFIW6AqRnOV/JkLQIDAQAB"
+					);
+					//获取时间
+					var nowtime = Date.parse(new Date());
+					//获取密码加时间的密钥
+					var mykey = "swuOrange" + "|" + nowtime;
+					//进行编码
+					var m = encrypt.encrypt(mykey);
+	
+					var formData = new FormData();
+					//文件信息
+					formData.append("passSign", m);
+	
+					//文件分割位置
+					var end = this.startByte + this.fileLen; //结束位置,最后一次上传
+					if (end >= this.totalSize) {
+						end = this.totalSize;
+						this.lastUpLoad = true;
+					}
+					//实际上传文件大小 slice:js中拆分文件
+					var actualFile = this.file.slice(this.startByte, end);
+	
+					formData.append("file", actualFile);
+					formData.append("fileName", this.fileName);
+					//上传文件
+	
+					axios({
+						method : "post", //请求方式
+						url : "MyFile/uploadFile", //请求地址
+						data : formData,
+						//请求头，很重要，告诉浏览器这是一个文件不是普通请求
+						headers : {
+							"Content-Type" : "multipart/form-data"
+						}
+					}).then(res => { //回调函数
+						this.startByte = res.data.obj;
+						this.upFunc()
+					})
+
+			
+			},
+		
+			/* 下拉框选项二级基地id查询生产者  */
+			indexSelect:function(val) {
+				sendAxios(
+					"quality/querySubbase",
+					this.subbase
+				).then(res=>{
+					if(res.data.code==200){
+						this.subbase = 	res.data.obj;
+						this.msg = res.data.msg;
+					}else if(res.data.code==400){
+						this.msg = res.data.msg;
+					}
+
+				})
+			},
+
+			queryQuality:function(){
+				//查询quality数据
+				sendAxios(
+					"quality/queryQuality",
+					this.nowPage
+				).then(res=>{
+					if(res.data.code==200){
+						this.qualitys = res.data.obj.list;
+						this.total = res.data.obj.total;
+						this.nowPage.nowPage=res.data.obj.pageNumber;
+						this.totalPages=res.data.obj.pages;	
+						this.msg = res.data.msg;
+					}else if(res.data.code==400){
+						this.msg = res.data.msg;
+					}
+
+				})
+			
+			
+			},
+			requestQuality() {
+			//发送申请
+				sendAxios(
+					"quality/requestQuality",
+						{}
+				).then(res=>{
+					if(res.data.code==200){
+						this.varietys=res.data.obj.aList;
+						this.subBases=res.data.obj.bList;
+					}
+
+				})
+			
+			
+			},
+			queryQualityByName() {//搜索质量检测名字
+				 this.temp=false;				
+				sendAxios("quality/requestQualityByName",this.quality)
+				
+					.then(res=>{
+						if(res.data.code == 200){
+							
+							this.qualitys = res.data.obj;
+							this.msg = res.data.msg;
+							
+						}else if(res.data.code == 400) {
+							this.qualitys = res.data.obj;
+							this.msg = res.data.msg;
+							
+							
+							
+						}
+						
+										
+						
+					})
+			
+			
+			},
+			
+			
+			check(num) {
+				if(num == 0) {
+					return "待审核";
+				}
+				if(num == 1) {
+					return "通过审核";
+				}
+				if(num == 2) {
+					return "驳回申请";
+				}
+			
+			},
+			
+			//点击首页
+			firstPage:function(){
+				this.nowPage.nowPage=1;
+				this.queryQuality();
+				
+			},
+			//点击尾页
+			lastPage:function(){
+				this.nowPage.nowPage=this.totalPages;
+				this.queryQuality();
+			},
+			//点击上一页
+			previousPage:function(){
+				if(this.nowPage.nowPage == 1){
+					this.nowPage.nowPage = 1;
+				}else{
+					this.nowPage.nowPage -= 1;
+				}
+				this.queryQuality();
+			},
+			//点击下一页
+			nextPage:function(){
+				if(this.nowPage.nowPage+1 >= this.totalPages){
+					this.nowPage.nowPage = this.totalPages;
+				}else{
+					this.nowPage.nowPage +=1;
+				}
+				this.queryQuality();
+			},
+     		//跳转页面
+			turnPage:function(){
+				if(this.targets > this.totalPages){
+					this.nowPage.nowPage=this.totalPages;
+				}else if(this.targets < 1){
+					this.nowPage.nowPage=1;
+				}else{
+					this.nowPage.nowPage=this.targets;
+				}
+				this.queryQuality();
+				this.targets='';
+			},
+			mysure:function(){
+				
+				if(temp){
+					this.getlist();
+				}
+				
+				this.temp=true;
+			
+			},
+			
+
+		},
+		
+		computed : {
+			point : function(){
+			
+				return parseInt((this.startByte / this.totalSize * 100)) + "%";
+
+			}
+		},
+	
+	
+	
+	
+	
+	
+	});
+
+
+
+
+
+
+
+
+</script> 
+</body>
+</html>

@@ -1,0 +1,563 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+<link rel="Bookmark" href="/favicon.ico" >
+<link rel="Shortcut Icon" href="/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="static/h-ui/css/H-ui.min.css" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/H-ui.admin.css" />
+<link rel="stylesheet" type="text/css" href="lib/Hui-iconfont/1.0.8/iconfont.css" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/skin/default/skin.css" id="skin" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/style.css" />
+<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.css" />
+<title>员工列表</title>
+<style>
+	 
+   .hover{
+      color:red;
+      background-color: #00b3f1;
+    }
+	.selected {
+            background-color: #00b3f1;
+    }
+        
+    .modal-backdrop{
+		z-index:0;
+	}
+    
+
+</style>
+</head>
+<body>
+
+<nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 基础信息管理 <span class="c-gray en">&gt;</span> 员工管理<a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+<div class="page-container" id="app">
+	<div class="text-c"> 
+		<input type="text" v-model="staff.staffName" class="input-text" style="width:250px" placeholder="输入员工姓名" id="" name="">
+		<button type="submit"  v-on:click="queryStaffByName()" class="btn btn-success"  data-toggle="modal" data-target="#mydialog" id="" name=""><i class="Hui-iconfont">&#xe665;</i> 点击搜索员工</button>
+	</div>
+	<div class="cl pd-5 bg-1 bk-gray mt-20" > 
+		<span class="l">
+			<a href="javascript:;" v-on:click="datadel()" class="btn btn-danger radius" data-toggle="modal" data-target="#myConform">
+				<i class="Hui-iconfont">&#xe6e2;</i> 批量删除
+			</a> 
+			<a href="javascript:;" v-on:click="addStaff()" data-toggle="modal" data-target="#addStaffModal" class="btn btn-primary radius">
+				<i class="Hui-iconfont">&#xe600;</i> 添加员工
+			</a>
+		</span> 
+		<span class="r">共有数据：<strong>{{totalRow}}</strong> 条</span> 
+	</div>
+	
+	<!--页面加载的数据  -->
+	<div >
+		
+		<table class="table table-border table-bordered table-bg">
+			<thead>
+				<tr>
+					<th scope="col" colspan="10">员工列表</th>
+				</tr>
+				<tr class="text-c">
+					<th width="25"><input type="checkbox" name="" value=""></th>
+					<th width="40">序号</th>
+					<th width="120">姓名</th>
+					<th width="80">性别</th>
+					<th width="80">年龄</th>
+					<th width="100">手机</th>
+					<th width="150">邮箱</th>
+					<th width="100">操作</th>
+				</tr>
+			</thead>
+		
+			<tbody>
+
+				<tr class="text-c" v-for="(staff,index)  in page.list">
+					<td><input type="checkbox" :value="staff.staffId" v-model="selectList" name="tag"></td>
+					<td>{{ index+1 }}</td>
+					<td>{{staff.staffName}}</td>
+					<td>{{checksex(staff.staffSex)}}</td>
+					<td>{{staff.staffAge}}</td>
+					<td>{{staff.staffTel}}</td>
+					<td>{{staff.staffEmail}}</td>
+					<td class="td-manage">
+						<button class="btn btn-primary radius"  v-on:click="updateOne(staff)"  title="编辑" data-toggle="modal" data-target="#myModal">
+							<i class="Hui-iconfont">&#xe6df;</i>
+						</button>
+						<button class="btn btn-primary radius"  v-on:click="updateOne(staff)"  title="删除" data-toggle="modal" data-target="#mydal">
+							<i class="Hui-iconfont">&#xe6e2;</i>
+						</button>
+						
+					</td>
+				</tr>
+			</tbody>
+
+		</table>
+		<!-- 分页组件  -->
+				<div v-show="play" class = "col-md-offset-5 col-lg-offset-5 col-xl-offset-5">
+					  <ul class="pagination pagination-centered">
+					    <li>
+					      <a @click="topage(1)" aria-label="Previous">
+					        <span aria-hidden="true">首页</span>
+					      </a>
+					    </li>
+					     <li v-for="(p,index) in pages" ><a @click="topage(p,index)" :class="{'selected':flag==index}"  :key="index" >{{p}}</a></li>
+					    <!-- :class="idx==index?'hover':''" -->
+					    <li>
+					      <a @click="topage(page.totalPage)" aria-label="Next">
+					        <span aria-hidden="true">尾页</span>
+					      </a>
+					    </li>
+					  </ul>
+				</div>
+			
+			
+		
+		<!--添加员工  -->
+		<div class="modal fade" id="addStaffModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-body">
+						
+						<div class="row cl">
+							<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>员工姓名：</label>
+							<div class="formControls col-xs-8 col-sm-9">
+								<input type="text" class="input-text" value="" v-model="staff.staffName" placeholder="员工姓名" id="staffName" name="staffName">
+							</div>
+						</div>
+						
+						<div class="row cl">
+							<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>初始密码：</label>
+							<div class="formControls col-xs-8 col-sm-9">
+								<input type="text" class="input-text" autocomplete="off" value="" v-model="staff.staffPassword" placeholder="初始密码" id="staffPassword" name="staffPassword">
+							</div>
+						</div>
+						
+						<div class="row cl">
+							<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>性别：</label>
+							<div class="formControls col-xs-8 col-sm-9 skin-minimal">
+								<div class="radio-box">
+									<input type ="radio" name="staffSex" v-model="staff.staffSex" type="radio" value="1" id="male" checked>
+									<label for="male">男</label>
+								</div>
+								<div class="radio-box">
+									<input type ="radio" name="staffSex" v-model="staff.staffSex" type="radio" value="0" id="female" >
+									<label for="female">女</label>
+								</div>
+							</div>
+						</div>
+						<div class="row cl">
+							<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>年龄：</label>
+							<div class="formControls col-xs-8 col-sm-9">
+								<input type="text" class="input-text" v-model="staff.staffAge" autocomplete="off" value="" placeholder="年龄" id="staffAge" name="staffAge">
+							</div>
+						</div>
+						<div class="row cl">
+							<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>手机：</label>
+							<div class="formControls col-xs-8 col-sm-9">
+								<input type="text" class="input-text" v-model="staff.staffTel" autocomplete="off" value="" placeholder="手机" id="staffTel" name="staffTel">
+							</div>
+						</div>
+						<div class="row cl">
+							<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>邮箱：</label>
+							<div class="formControls col-xs-8 col-sm-9">
+								<input type="text" class="input-text" v-model="staff.staffEmail" autocomplete="off" value="" placeholder="邮箱" id="staffEmail" name="staffEmail">
+							</div>
+						</div>
+						<div class="row cl">
+							<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-3">
+								<button v-on:click="addSubmit(staff)" class="btn btn-primary radius" data-toggle="modal" data-target="#mydialog" type="submit"><i class="Hui-iconfont">&#xe632;</i> 提交</button>
+								<button v-on:click="removeStaffModal()" class="btn btn-default radius" type="button">&nbsp;&nbsp;取消&nbsp;&nbsp;</button>
+							</div>
+						</div>
+						
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		
+		
+		
+		
+		<!-- 编辑员工 -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-body">
+						
+							<div class="row cl">
+								<label class="form-label col-xs-4 col-sm-2">姓名:</label>
+								<div class="formControls col-xs-8 col-sm-9">
+									<input type="text" class="input-text" id="staffName" v-model="someone.staffName" >
+								</div>
+							</div>
+							<div class="row cl">
+								<label class="form-label col-xs-4 col-sm-2">性别：</label>
+								<div class="formControls col-xs-8 col-sm-9">
+									<input type="text" class="input-text"  id="staffSex" v-model="someone.staffSex"  >
+								</div>
+							</div>
+							<div class="row cl">
+								<label class="form-label col-xs-4 col-sm-2">年龄：</label>
+								<div class="formControls col-xs-8 col-sm-9">
+									<input type="text" class="input-text"  id="staffAge" v-model="someone.staffAge"  >
+								</div>
+							</div>
+							<div class="row cl">
+								<label class="form-label col-xs-4 col-sm-2">手机：</label>
+								<div class="formControls col-xs-8 col-sm-9">
+									<input type="text" class="input-text"  id="staffTel" v-model="someone.staffTel">
+								</div>
+							</div>
+							<div class="row cl">
+								<label class="form-label col-xs-4 col-sm-2">邮箱：</label>
+								<div class="formControls col-xs-8 col-sm-9">
+									<input type="text" class="input-text" id="staffEmail" v-model="someone.staffEmail">
+								</div>
+							</div>
+							<div class="row cl">
+								<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-2">
+									<button v-on:click="updateSubmit(someone)" class="btn btn-primary radius" data-toggle="modal" data-target="#mydialog" type="submit"><i class="Hui-iconfont">&#xe632;</i> 提交</button>
+									<button v-on:click="removeModel()" class="btn btn-default radius" type="button">&nbsp;&nbsp;取消&nbsp;&nbsp;</button>
+								</div>
+							</div>
+						
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 删除按钮-->
+		<div class="modal fade" id="mydal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog" style="width:600px;height:500px;">
+				<div class="modal-content">
+					<div class="modal-body">
+						
+							<div class="row cl">
+								<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-2">
+									<span style="font-size:20px">确定要删除这个员工的所有信息吗？</span></br></br></br>
+									<button v-on:click="deleteStaff(someone)" class="btn btn-primary radius" data-toggle="modal" data-target="#mydialog" type="submit"><i class="Hui-iconfont">&#xe632;</i> 确定</button>
+									<button v-on:click="removeMyModel()" class="btn btn-default radius" type="button">&nbsp;&nbsp;取消&nbsp;&nbsp;</button>
+								</div>
+							</div>
+						
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div v-if="flag" class="modal fade" id="myConform" tabindex="-1" role="dialog" aria-labelledby="myConform" aria-hidden="true">
+		    <div class="modal-dialog">
+		        <div class="modal-content">
+		            <div class="modal-header">
+		                <h2 class="modal-title" id="myModalLabel">{{conf.title}}</h2>
+		            </div>
+		            <div class="modal-body">{{conf.msg}}</div>
+		            <div class="modal-footer">
+		                <button type="button" @click="deleteClose()" class="btn btn-default" >关闭</button>
+		                <button type="button" @click="deleteStaffs()" data-toggle="modal" data-target="#mydialog" class="btn btn-primary">确认</button>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		
+		<!--用户操作结束后给用户的弹出框  -->
+		<div  class="modal fade" id="mydialog" tabindex="-1" role="dialog" aria-labelledby="mydialog" aria-hidden="true">
+		    <div class="modal-dialog">
+		        <div class="modal-content">
+		            <div class="modal-header">
+		                <h2 class="modal-title" id="myModalLabel">{{top}}</h2>
+		            </div>
+		            <div class="modal-body">{{msg}}</div>
+		            <div class="modal-footer">
+		                <button type="button" @click="mysure()" data-dismiss="modal" class="btn btn-primary">确认</button>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		
+		
+
+	</div>
+</div>
+
+
+
+
+
+<!--_footer 作为公共模版分离出去-->
+<script type="text/javascript" src="js/jquery-1.11.3.js"></script>
+<script type="text/javascript" src="js/vue.js"></script>
+<script type="text/javascript" src="js/jq-paginator.js"></script> 
+<script type="text/javascript" src="lib/layer/2.4/layer.js"></script>
+<script type="text/javascript" src="static/h-ui/js/H-ui.min.js"></script> 
+<script type="text/javascript" src="static/h-ui.admin/js/H-ui.admin.js"></script> <!--/_footer 作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="lib/My97DatePicker/4.8/WdatePicker.js"></script> 
+<script type="text/javascript" src="lib/datatables/1.10.0/jquery.dataTables.min.js"></script> 
+<script type="text/javascript" src="lib/laypage/1.2/laypage.js"></script>
+
+<script type="text/javascript" src="js/axios.min.js"></script>
+<script type="text/javascript" src="js/jsencrypt.min.js"></script>
+<script type="text/javascript" src="js/swuorange-common.js"></script>
+
+
+
+
+
+<script type="text/javascript">
+	var flag = -1;
+	var vm = new Vue({
+        el: "#app",
+        
+        data: {
+
+            staffs: [],
+            staff:{},
+            someone:{},
+           //后端返回数据
+           	nowPage:{nowPage:1},
+			page:{},
+			//想要跳转的页面
+			wantpage:'',
+			//分页数组
+			pages:[],
+			play:true,
+			totalRow:{},
+			selectList:[],
+			flag:false,
+			/* 模态提示框 */
+			conf:{title:"",msg:""},
+			msg:"",
+			top:"提示!",
+			temp:true,
+		},
+        created: function () {
+            this.getlist()
+            
+        },    
+        methods:{
+        	 
+        	getlist:function(){
+        		this.pages=[];
+        	 	sendAxios(
+				'staff/getStaffList',
+				this.nowPage
+				).then(res => {//有数据返回
+				
+					if(res.data.code == 200){
+						this.page = res.data.obj;
+                		this.getpage(res.data.obj.nowPage);
+						this.totalRow=res.data.obj.totalRow;
+						
+					}else if(res.data.code == 400) {
+						//数据库没有数据返回
+						
+					}
+
+                			
+				});
+        	       	 
+        	 },
+        	 getpage:function(nowpage){
+				var start=1;
+				var end = nowpage+2;
+				if(nowpage-2<=0){
+					start=1;
+				}else{
+					start=nowpage-2;
+				};
+				if(nowpage+2>=this.page.totalPage){
+					end=this.page.totalPage;
+				};
+				
+				for(var i = start;i<=end;i++){
+					this.pages.push(i);
+				}
+			},
+			topage:function(topage,index){
+				 this.flag = index;
+				this.nowPage.nowPage=topage;
+				this.getlist();
+				
+			},
+        	checksex:function(sex){
+          		return sex==0?"女":"男";
+            },
+        	 
+            updateOne:function(ad){
+				sendAxios("staff/queryStaff",ad).then(res=>{
+					if(res.data.code==200){
+						this.someone=res.data.obj;
+						//
+					}else if(res.data.code==400) {
+						//this.msg = res.data.msg;
+					}
+						
+					
+				})
+			},
+			updateSubmit:function(staff){
+            	sendAxios("staff/updateById",staff).then(res=>{
+					if(res.data.code==200){					
+						this.msg = res.data.msg;						
+					}else if(res.data.code==400) {
+						this.msg = res.data.msg;
+					}
+					//调用方法让模态框消失
+					this.removeModel();
+					
+						
+				})
+            	
+            },
+			queryStaffByName:function(){
+			     this.temp=false;				
+				sendAxios("staff/query",this.staff)
+				
+					.then(res=>{
+						if(res.data.code == 200){
+							this.page=[];
+							this.page=res.data.obj;
+							this.play = false;
+							this.msg = res.data.msg;
+							this.conf={title:"提示",msg:"查询用户信息成功!"}
+						}else if(res.data.code == 400) {
+							this.getlist()
+							this.msg = res.data.msg;
+							this.conf={title:"提示",msg:"查询用户信息失败!"}
+							
+							
+						}
+						
+										
+						
+					})
+			
+			},
+            
+            deleteStaff:function(one){
+				sendAxios("staff/delStaff",one).then(res=>{
+					
+					if(res.data.code==200){//删除成功
+						
+						this.msg = res.data.msg;
+						this.someone=res.data.obj;
+					}else if(res.data.code==400) {//删除失败
+						this.msg = res.data.msg;
+					}
+					//调用方法让模态框消失
+					this.removeMyModel();
+					
+					
+					
+				})
+			},
+            removeModel:function(){
+				$("#myModal").modal('hide');
+				
+			},
+			removeMyModel:function(){
+				$("#mydal").modal('hide');
+				
+			},
+			removeStaffModal:function(){
+				$("#addStaffModal").modal('hide');
+			
+			},
+			deleteClose:function(){
+			
+				$("#myConform").modal('hide');
+			
+			},
+			
+			
+			datadel:function(){
+				this.flag=false;				
+				if(this.selectList.length == 0){
+        			alert("请选择要删除的员工");
+        			return;
+        		}else{      			
+        			this.flag=true;
+					this.conf={title:"确认删除",msg:"您将要删除"+this.selectList.length+"条信息?"}
+        		}
+			},
+			deleteStaffs:function(){
+				
+				var m = JSON.stringify(this.selectList);
+  				sendAxios("staff/delStaffs",{list:m}).then(res=>{
+					//数据提交后,清空数组;
+					this.selectList=[];
+					if(res.data.code==200){						
+						this.msg = res.data.msg;						
+					}else if(res.data.code==400){
+						//删除失败
+						this.msg = res.data.msg;
+						
+					}
+					this.deleteClose();
+				
+				})
+
+			},
+			
+			addSubmit:function(s){
+				sendAxios("staff/addStaff",s).then(res=>{
+					if(res.data.code==200){
+						this.msg = res.data.msg;						
+					}else if(res.data.code==400) {
+						this.msg = res.data.msg;
+					}
+					this.removeStaffModal();
+					
+				})
+			
+			
+			},
+			mysure:function(){
+				
+				if(temp){
+					this.getlist();
+				}
+				
+				this.temp=true;
+			
+			},
+		}
+       
+   
+ })
+
+
+
+
+
+
+
+/*
+	参数解释：
+	title	标题
+	url		请求的url
+	id		需要操作的数据id
+	w		弹出层宽度（缺省调默认值）
+	h		弹出层高度（缺省调默认值）
+*/
+
+
+
+
+
+/*员工-增加*/
+function admin_add(title,url,w,h){
+	layer_show(title,url,w,h);
+}
+
+
+
+
+</script>
+</body>
+</html>

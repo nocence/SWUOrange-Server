@@ -1,0 +1,220 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<title>注册页面</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+<link rel="shortcut icon" href="resources/images/favicon.ico" />
+<link href="resources/style/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="resources/js/jquery.js"></script>
+<script type="text/javascript" src="resources/js/jquery.i18n.properties-1.0.9.js" ></script>
+<script type="text/javascript" src="resources/js/jquery-ui-1.10.3.custom.js"></script>
+<script type="text/javascript" src="resources/js/jquery.validate.js"></script>
+<script type="text/javascript" src="resources/js/md5.js"></script>
+<script type="text/javascript" src="resources/js/page_regist.js?lang=zh"></script>
+<!-- <link href="static/yj/css/bootstrap.min.css" rel="stylesheet"> -->
+<link href="static/yj/css/gloab.css" rel="stylesheet">
+<link href="static/yj/css/index.css" rel="stylesheet">
+	<style>
+		.error{
+			color:red;
+		}
+	</style>
+	<script type="text/javascript">
+		$.validator.setDefaults({
+    		submitHandler: function() {
+      			alert("提交事件!");
+    		}
+		});
+		
+		$(function(){
+			/*检查用户是否已存在  */
+			$("#account").blur(function(){
+				var account = $("#account").val();
+				$.ajax({
+					type:"post",
+					url:"user/regNameCheck",
+					data:{"account":account},
+					dataType:"json",
+					success:function(res){
+						if(res.code=="200"){
+						//用户存在,不能注册
+						$(".tip").html(res.msg);
+						
+						}else if(res.code=="400"){
+						$(".tip").html(res.msg);
+						
+						}
+					
+					
+					}
+
+				
+				});
+			
+			});
+			
+			/* 点击发送手机验证码给用户 */
+			$("#verifyYz").click(function(){
+				var tel = $("#tel").val();	
+				$.ajax({
+					type:"post",
+					url:"user/sendTelCode",
+					data:{"tel":tel},
+					dataType:"json",
+					success:function(res){
+						if(res.code=="200"){//手机验证码发送成功
+					
+							$(".tip").html(res.msg);
+						}else if(res.code=="400"){//手机验证码发送失败
+							$(".tip").html(res.msg);
+						
+						}
+					
+					}
+					
+				})
+
+			
+			})
+
+		
+			/* 定时发送请求 */
+			var check=setInterval(function(){
+				$.ajax({
+					type:"post",
+					url:"check",
+					dataType:"json",
+					success:function(res){
+						if(res.code=="200"){//注册成功
+							$(".tip").html("注册成功!");
+						}else {//注册失败
+							$(".tip").html("注册失败!");
+						}
+						clearInterval(check);
+					}
+				
+				});
+			},2000);
+			
+			
+			$(".selector").click(function(){
+				$.ajax({
+					type:"post",
+					url:"user/register",
+					dataType:"json",
+					data:{
+						"account":$("#account").val(),
+						"password":$("#password").val(),
+						"rePassword":$("#rePassword").val(),
+						"tel":$("#tel").val(),
+						"email":$("#email").val(),
+						"realname":$("#realname").val(),
+						"telCode":$("#telCode").val()
+					},
+					
+					success:function(res){
+						if(res.code=="200"){//前往注册成功页面
+							$(".tip").html("注册成功!");
+							//window.location.href="regIndex.html"
+						}else {
+							
+							$(".tip").html("注册失败!");
+							//window.location.href="reg.html"
+						}
+					}
+				});
+
+			})
+		
+
+		
+  		
+	});
+
+
+		
+	</script>
+
+
+
+
+</head>
+<body class="loginbody">
+<div class="dataEye">
+	<div class="loginbox registbox">
+		
+		<div class="login-content reg-content">
+			<div class="loginbox-title">
+				<h3>注册</h3>
+			</div>
+			<div id="signupForm">
+			<div class="login-error"></div>
+			<div class="row">
+				
+				<div class="tip">错误提示区域</div>
+			</div>
+			<div class="row">
+				<label class="field" for="account">用户名</label>
+				<input type="text" value="" class="input-text-user noPic input-click" name="account" id="account">
+			</div>
+			<div class="row">
+				<label class="field" for="password">密码</label>
+				<input type="password" value="" class="input-text-password noPic input-click" name="password" id="password">
+			</div>
+			<div class="row">
+				<label class="field" for="rePassword">确认密码</label>
+				<input type="password" value="" class="input-text-password noPic input-click" name="rePassword" id="rePassword">
+			</div>
+			
+			<div class="row">
+				<label class="field" for="email">注册邮箱</label>
+				<input type="text" value="" class="input-text-user noPic input-click" name="email" id="email">
+			</div>
+			<div class="row">
+				<label class="field" for="realname">真实姓名</label>
+				<input type="text" value="" class="input-text-user noPic input-click" name="realname" id="realname">
+			</div>
+			<div class="row">
+				<label class="field" for="tel">手机号码</label>
+				<input type="text" value="" class="input-text-user noPic input-click" name="tel" id="tel">
+			</div>
+			
+			<div class="row">
+				
+				<input type="text" value="" style="width:97px;" name="telCode" id="telCode">
+				<button class="btn btn-gray  f-r3 f-ml5 f-size13" id="time_box" disabled style="width:120px;display:none;">发送验证码</button>
+	        	<button class="btn btn-gray  f-r3 f-ml5 f-size13" id="verifyYz" style="width:120px;">发送验证码</button>
+			</div>
+			
+			<div class="row tips">
+				<input type="checkbox" id="checkBox" id="agree" name="agree">
+				<label for="agree">
+				我已阅读并同意
+				<a href="#" target="_blank">隐私政策、服务条款</a>
+
+				</label>
+			</div>
+			<div class="row btnArea">
+				<!-- <a class="login-btn" id="userreg">注册</a> -->
+				<input class="selector" type="button" value="注册">
+			</div>
+			</div>
+		</div>
+		<div class="go-regist">
+			已有帐号,请<a href="swu_login.html" class="link">登录</a>
+		</div>
+	</div>
+	
+
+</div>
+<div class="loading">
+	<div class="mask">
+		<div class="loading-img">
+		<img src="resources/images/loading.gif" width="31" height="31">
+		</div>
+	</div>
+</div>
+</body>
+</html>
+

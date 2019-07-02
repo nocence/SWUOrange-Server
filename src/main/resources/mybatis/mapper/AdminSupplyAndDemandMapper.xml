@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.swuorange.dao.AdminSupplyAndDemandMapper">
+
+	<select id="queryBuyTotalCount" resultType="java.lang.Integer"
+		parameterType="com.swuorange.dto.DemandSearchDTO">
+		SELECT
+		COUNT(buy_id)
+		FROM
+		`swu_buying_info`
+		WHERE 1=1
+
+		<if test="startTime != null and startTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(`release_time`, '%Y-%m-%d')>=  DATE_FORMAT(#{startTime}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="endTime != null and endTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(`release_time`, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d')  ]]>
+		</if>
+		<if test="title != null and title != '' ">
+			AND `title` LIKE CONCAT(CONCAT('%',#{title},'%'))
+		</if>
+		<if test="state != null">
+			AND state = #{state}
+		</if>
+	</select>
+	<!-- 查询供应的总数 -->
+	<select id="querySupplyTotalCount" resultType="java.lang.Integer"
+		parameterType="com.swuorange.dto.SupplySearchDTO">
+		SELECT
+		COUNT(`supply_id`)
+		FROM
+		`swu_supply_info`
+		WHERE 1=1
+		<if test="startTime != null and startTime != '' ">
+			<![CDATA[  and DATE_FORMAT(`release_time`, '%Y-%m-%d') >= DATE_FORMAT(#{startTime}, '%Y-%m-%d')  ]]>
+		</if>
+		<if test="endTime != null and endTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(`release_time`, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d')  ]]>
+		</if>
+		<if test="title != null and title != '' ">
+			AND `title` LIKE CONCAT(CONCAT('%',#{title},'%'))
+		</if>
+		<if test="state != null">
+			AND state = #{state}
+		</if>
+	</select>
+	<!-- 根据前端条件模糊查询 -->
+	<select id="queryBuyBy" resultType="com.swuorange.dto.DemandDTO"
+		parameterType="com.swuorange.dto.DemandSearchDTO">
+		SELECT * FROM
+		`swu_buying_info` b
+		JOIN `swu_product` p ON b.`product_id`
+		= p.`product_id`
+		WHERE 1 = 1
+		<if test="startTime != null and startTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(b.`release_time`, '%Y-%m-%d')>=  DATE_FORMAT(#{startTime}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="endTime != null and endTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(b.`release_time`, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d')  ]]>
+		</if>
+		<if test="title != null and title != '' ">
+			AND b.`title` LIKE CONCAT(CONCAT('%',#{title},'%'))
+		</if>
+		<if test="state != null">
+			AND b.state = #{state}
+		</if>
+		ORDER BY b.`release_time` DESC
+		LIMIT #{start},#{pagRow}
+	</select>
+	<!-- 根据前端条件模糊查询List -->
+	<select id="querySupplyBy" resultType="com.swuorange.dto.SupplyInfoDTO"
+		parameterType="com.swuorange.dto.SupplySearchDTO">
+		SELECT si.*,p.*,v.*,c.`company_name` FROM swu_supply_info si
+		JOIN `swu_variety` v ON si.`variety_id` = v.`variety_id`
+		JOIN `swu_product` p ON v.`product_id` = p.`product_id`
+		JOIN `swu_user` u ON si.`user_id` = u.`user_id`
+		JOIN `swu_companyinfo` c ON u.`companyinfo_id` = c.`companyinfo_id`
+		WHERE 1=1
+		<if test="startTime != null and startTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(si.`release_time`, '%Y-%m-%d')>=  DATE_FORMAT(#{startTime}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="endTime != null and endTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(si.`release_time`, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d')  ]]>
+		</if>
+		<if test="title != null and title != '' ">
+			AND si.`title` LIKE CONCAT(CONCAT('%',#{title},'%'))
+		</if>
+		<if test="state != null">
+			AND si.state = #{state}
+		</if>
+		ORDER BY si.`release_time` DESC
+		LIMIT #{start},#{pageRow}
+	</select>
+	<update id="updateBuy" parameterType="com.swuorange.dto.Remarks">
+		UPDATE
+		`swu_buying_info`
+		<set>
+			<if test="state != null">
+				`state` = #{state},
+			</if>
+			<if test="remark != null">
+				`remarks` = #{remark},
+			</if>
+		</set>
+		WHERE
+		`buy_id` = #{operateId} ;
+	</update>
+	<update id="updateSupply" parameterType="com.swuorange.dto.Remarks">
+		UPDATE
+		`swu_supply_info`
+		<set>
+			<if test="state != null">
+				`state` = #{state},
+			</if>
+			<if test="remark != null">
+				`remarks` = #{remark},
+			</if>
+		</set>
+		WHERE
+		`supply_id` = #{operateId} ;
+	</update>
+</mapper>
+

@@ -1,0 +1,17 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 配置对应的mapper映射文件 -->
+<mapper namespace="com.swuorange.dao.UserModelMapper">
+	<!-- id 要改成对应的mapper文件中方法名 resultType 要改成对应的返回值类型 -->
+	
+	
+	 <select id="queryUserName" parameterType="com.swuorange.dto.RegUser" resultType="com.swuorange.dto.RegUser">
+     
+     	select * from swu_user where 1
+     	<if test="account != null">
+     	 and account=#{account}
+     	</if>
+     	
+     </select>
+
+</mapper>

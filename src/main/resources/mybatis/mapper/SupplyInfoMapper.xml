@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.swuorange.dao.SupplyInfoMapper">
+
+	<select id="queryTotalCount" resultType="java.lang.Integer"
+		parameterType="com.swuorange.dto.SupplySearchDTO">
+		SELECT COUNT(si.`user_id`) FROM
+		`swu_supply_info` si
+		WHERE 
+		si.`user_id` = #{userId}
+		<if test="startTime != null and startTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(si.`release_time`, '%Y-%m-%d')>=  DATE_FORMAT(#{startTime}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="endTime != null and endTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(si.`release_time`, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d')  ]]>
+		</if>
+		<if test="title != null and title != '' ">
+			AND si.`title` LIKE CONCAT(CONCAT('%',#{title},'%'))
+		</if>
+	</select>
+	<!-- 根据前端条件模糊查询 -->
+	<select id="querySupplyBy" resultType="com.swuorange.dto.SupplyInfoDTO"
+		parameterType="com.swuorange.dto.SupplySearchDTO">
+		SELECT si.*,p.*,v.*,c.`company_name` FROM swu_supply_info si
+			JOIN `swu_variety` v ON si.`variety_id` = v.`variety_id`
+			JOIN `swu_product` p ON v.`product_id` = p.`product_id`
+			JOIN `swu_user` u ON si.`user_id` = u.`user_id`
+			JOIN `swu_companyinfo` c ON u.`companyinfo_id` = c.`companyinfo_id`
+			WHERE u.`user_id` = #{userId}
+		<if test="startTime != null and startTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(si.`release_time`, '%Y-%m-%d')>=  DATE_FORMAT(#{startTime}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="endTime != null and endTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(si.`release_time`, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d')  ]]>
+		</if>
+		<if test="title != null and title != '' ">
+			AND si.`title` LIKE CONCAT(CONCAT('%',#{title},'%'))
+		</if>
+		ORDER BY si.`release_time` DESC
+		LIMIT #{start},#{pageRow}
+	</select>
+	<select id="getVariety" resultType="com.swuorange.po.Variety">
+		SELECT 
+		  `variety_id`,
+		  `variety`,
+		  `product_id`,
+		  `introduction` 
+		FROM
+		  `swu_variety` v
+		WHERE
+		  v.`product_id` = #{productId}	
+	</select>
+
+</mapper>
+

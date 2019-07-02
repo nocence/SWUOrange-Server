@@ -1,0 +1,199 @@
+<!DOCTYPE HTML>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="renderer" content="webkit|ie-comp|ie-stand">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+		<meta http-equiv="Cache-Control" content="no-siteapp" />
+		<link rel="stylesheet" type="text/css" href="static/h-ui/css/H-ui.min.css" />
+		<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/H-ui.admin.css" />
+		<link rel="stylesheet" type="text/css" href="lib/Hui-iconfont/1.0.8/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="static/h-ui.admin/skin/default/skin.css" id="skin" />
+		<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/style.css" />
+		
+
+		<title>员工管理</title>
+		<meta name="keywords" content="西南大学中国柑桔科技供应与产业信息服务平台">
+		<meta name="description" content="西南大学中国柑桔科技供应与产业信息服务平台">
+	</head>
+
+	<body>
+		<article class="page-container">
+			<form class="form form-horizontal" id="form-admin-add">
+
+				<div class="row cl">
+					<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>员工姓名：</label>
+					<div class="formControls col-xs-8 col-sm-9">
+						<input type="text" class="input-text" value="" placeholder="员工姓名" id="staffName" name="staffName">
+					</div>
+				</div>
+				
+				<div class="row cl">
+					<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>初始密码：</label>
+					<div class="formControls col-xs-8 col-sm-9">
+						<input type="text" class="input-text" autocomplete="off" value="" placeholder="初始密码" id="staffPassword" name="staffPassword">
+					</div>
+				</div>
+				
+				<div class="row cl">
+					<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>性别：</label>
+					<div class="formControls col-xs-8 col-sm-9 skin-minimal">
+						<div class="radio-box">
+							<input type ="radio" name="staffSex" type="radio" value="1" id="male" checked>
+							<label for="male">男</label>
+						</div>
+						<div class="radio-box">
+							<input type ="radio" name="staffSex" type="radio" value="0" id="female" >
+							<label for="female">女</label>
+						</div>
+					</div>
+				</div>
+				<div class="row cl">
+					<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>年龄：</label>
+					<div class="formControls col-xs-8 col-sm-9">
+						<input type="text" class="input-text" autocomplete="off" value="" placeholder="年龄" id="staffAge" name="staffAge">
+					</div>
+				</div>
+				<div class="row cl">
+					<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>手机：</label>
+					<div class="formControls col-xs-8 col-sm-9">
+						<input type="text" class="input-text" autocomplete="off" value="" placeholder="手机" id="staffTel" name="staffTel">
+					</div>
+				</div>
+				<div class="row cl">
+					<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>邮箱：</label>
+					<div class="formControls col-xs-8 col-sm-9">
+						<input type="text" class="input-text" autocomplete="off" value="" placeholder="邮箱" id="staffEmail" name="staffEmail">
+					</div>
+				</div>
+				<div class="row cl">
+					<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-3">
+						<input class="btn btn-primary radius" type="button" onclick="add()" value="&nbsp;&nbsp;提交&nbsp;&nbsp;">
+					</div>
+				</div>
+			</form>
+		</article>
+
+		<!--_footer 作为公共模版分离出去-->
+		<script type="text/javascript" src="lib/jquery/1.9.1/jquery.min.js"></script>
+		<script type="text/javascript" src="lib/layer/2.4/layer.js"></script>
+		<script type="text/javascript" src="static/h-ui/js/H-ui.min.js"></script>
+		<script type="text/javascript" src="static/h-ui.admin/js/H-ui.admin.js"></script>
+		<script type="text/javascript" src="js/axios.min.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<!--/_footer 作为公共模版分离出去-->
+
+		<!--请在下方写此页面业务相关的脚本-->
+		<script type="text/javascript" src="lib/jquery.validation/1.14.0/jquery.validate.js"></script>
+		<script type="text/javascript" src="lib/jquery.validation/1.14.0/validate-methods.js"></script>
+		<script type="text/javascript" src="lib/jquery.validation/1.14.0/messages_zh.js"></script>
+		<script type="text/javascript">
+			
+			$(function() {
+
+				$("#form-admin-add").validate({
+					
+					rules: {
+						staffName: {
+							required: true,
+							minlength: 4,
+							maxlength: 16
+						},
+						staffPassword: {
+							required: true,
+							minlength: 4,
+							maxlength: 16
+						},
+						staffSex:{
+							required: true
+						},
+						staffAge: {
+							required: true,
+							minlength: 1,
+						},
+						staffTel:{
+							required: true,
+							minlength: 11,
+							maxlength: 11,
+						},
+						
+						staffEmail:{
+							required: true,
+	        				email: true
+						}
+					}
+				
+				});
+				
+				//通过ajax获取返回的mq值
+				/* 定时发送请求 */
+			var check=setInterval(function(){
+				$.ajax({
+					type:"post",
+					url:"check",
+					dataType:"json",
+					success:function(res){
+						if(res.code=="200"){//添加员工成功
+							layer.msg('添加成功!', {
+									icon: 1,
+									time: 1000
+								});
+						}else {//添加员工失败
+							layer.msg('error!', {
+									icon: 1,
+									time: 1000
+								});
+						}
+						clearInterval(check);
+					}
+				
+				});
+			},2000);
+				
+				
+		});
+			
+		function add(){
+			
+				var flag = $("#form-admin-add").valid();
+    			if(!flag){ //没有通过验证
+        			return;
+    			} 
+    			/* var data = $("#form-admin-add").serializeObject(); */
+
+				$.ajax({
+					type: 'post',
+					url: "staff/addStaff",
+					data:{
+					"staffName":$("#staffName").val(),
+					"staffPassword":$("#staffPassword").val(),
+					"staffSex":$("input[type='radio']:checked").val(),
+					"staffAge":$("#staffAge").val(),
+					"staffTel":$("#staffTel").val(),
+					"staffEmail":$("#staffEmail").val()
+					}, 
+					success: function(data) {
+						layer.msg('成功!', {
+							icon: 1,
+							time: 1000
+						});
+					},
+					error: function(XmlHttpRequest, textStatus, errorThrown) {
+						layer.msg('error!', {
+							icon: 1,
+							time: 1000
+						});
+					}
+				});
+			
+			
+		}
+			
+			
+		</script>
+		<!--/请在上方写此页面业务相关的脚本-->
+	</body>
+
+</html>

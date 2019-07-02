@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.swuorange.dao.DemandMapper">
+	<select id="getProductType" resultType="com.swuorange.po.Product">
+		SELECT
+		`product_id`,
+		`product_type`
+		FROM
+		`swu_product`
+	</select>
+
+	<select id="queryTotalCount" resultType="java.lang.Integer"
+		parameterType="com.swuorange.dto.DemandSearchDTO">
+		SELECT
+		COUNT(b.`user_id`)
+		FROM
+		`swu_buying_info` b
+		WHERE
+		b.`user_id`=#{userId}
+		<if test="startTime != null and startTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(b.`release_time`, '%Y-%m-%d')>=  DATE_FORMAT(#{startTime}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="endTime != null and endTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(b.`release_time`, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d')  ]]>
+		</if>
+		<if test="title != null and title != '' ">
+			AND b.`title` LIKE CONCAT(CONCAT('%',#{title},'%'))
+		</if>
+	</select>
+	<!-- 根据前端条件模糊查询 -->
+	<select id="queryDemandBy" resultType="com.swuorange.dto.DemandDTO"
+		parameterType="com.swuorange.dto.DemandSearchDTO">
+		SELECT * FROM
+		`swu_buying_info` b
+		JOIN `swu_product` p ON b.`product_id`
+		= p.`product_id`
+		WHERE b.`user_id` = #{userId}
+		<if test="startTime != null and startTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(b.`release_time`, '%Y-%m-%d')>=  DATE_FORMAT(#{startTime}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="endTime != null and endTime != '' ">
+		    <![CDATA[  and DATE_FORMAT(b.`release_time`, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d')  ]]>
+		</if>
+		<if test="title != null and title != '' ">
+			AND b.`title` LIKE CONCAT(CONCAT('%',#{title},'%'))
+		</if>
+		ORDER BY b.`release_time` DESC
+		LIMIT #{start},#{pagRow}
+	</select>
+
+</mapper>
+

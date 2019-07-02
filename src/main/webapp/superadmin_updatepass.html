@@ -1,0 +1,120 @@
+<!--_meta 作为公共模版分离出去-->
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+<link rel="Bookmark" href="/favicon.ico" >
+<link rel="Shortcut Icon" href="/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="static/h-ui/css/H-ui.min.css" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/H-ui.admin.css" />
+<link rel="stylesheet" type="text/css" href="lib/Hui-iconfont/1.0.8/iconfont.css" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/skin/default/skin.css" id="skin" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/style.css" />
+<!--/meta 作为公共模版分离出去-->
+
+<title>新增管理员</title>
+</head>
+<body>
+<article class="page-container" id="all">
+	<form class="form form-horizontal" id="form-article-add">
+		
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2">初始密码：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input type="password" v-model="admin.passWord" class="input-text">
+			</div>
+		</div>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>新密码:</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input type="password" v-model="admin.newPassword" class="input-text">
+			</div>
+		</div>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>确认密码：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input type="password" class="input-text" v-model="admin.confirmPassword">
+			</div>
+		</div>
+		<div class="row cl">
+			<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-2">
+				<input type="button" @click="updatePass" class="btn btn-primary radius" value="提交">
+				<button onClick="removeIframe();" class="btn btn-default radius" type="button">&nbsp;&nbsp;取消&nbsp;&nbsp;</button>
+			</div>
+		</div>
+	</form>
+</article>
+
+<!--_footer 作为公共模版分离出去-->
+<script type="text/javascript" src="js/jquery-1.11.3.js"></script>
+<script type="text/javascript" src="js/vue.js"></script>
+<script type="text/javascript" src="js/axios.min.js"></script>
+<script type="text/javascript" src="js/swuorange-common.js"></script>
+<script type="text/javascript" src="js/jsencrypt.min.js"></script>
+<script type="text/javascript" src="lib/layer/2.4/layer.js"></script>
+<script type="text/javascript" src="static/h-ui/js/H-ui.min.js"></script> 
+<script type="text/javascript" src="static/h-ui.admin/js/H-ui.admin.js"></script> <!--/_footer /作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="lib/My97DatePicker/4.8/WdatePicker.js"></script>
+<script type="text/javascript" src="lib/jquery.validation/1.14.0/jquery.validate.js"></script> 
+<script type="text/javascript" src="lib/jquery.validation/1.14.0/validate-methods.js"></script> 
+<script type="text/javascript" src="lib/jquery.validation/1.14.0/messages_zh.js"></script>
+<script type="text/javascript" src="lib/webuploader/0.1.5/webuploader.min.js"></script> 
+<script type="text/javascript" src="lib/ueditor/1.4.3/ueditor.config.js"></script> 
+<script type="text/javascript" src="lib/ueditor/1.4.3/ueditor.all.min.js"> </script> 
+<script type="text/javascript" src="lib/ueditor/1.4.3/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript">
+$(function(){
+	$('.skin-minimal input').iCheck({
+		checkboxClass: 'icheckbox-blue',
+		radioClass: 'iradio-blue',
+		increaseArea: '20%'
+	});
+	var ue = UE.getEditor('editor');
+	
+});
+
+new Vue({
+	el:"#all",
+	data:{
+		admin:{
+			passWord: '',
+			newPassword: '',
+			confirmPassword: ''
+		},
+		postData: {}
+	},
+	created:function(){
+		this.postData = JSON.parse(sessionStorage.getItem("loginadmin"));
+	},
+	methods:{
+		updatePass:function(){
+			console.log('原密码', this.postData, this.postData.passWord)
+			if(this.postData.passWord != this.admin.passWord ){
+				return alert("初始密码错误！");
+			}
+			if(this.admin.newPassword != this.admin.confirmPassword){
+				return alert("两次输入的密码不一致！");
+			}
+			if(this.admin.confirmPassword == this.admin.passWord){
+				return alert("不能使用目前正在使用的密码！");
+			}
+			this.postData.passWord = this.admin.confirmPassword;
+			sendAxios("admin/updatePass", this.postData).then(res=>{
+				if(res.data.code==200){
+					alert("修改成功！系统即将退出，请重新登录！");
+					window.location.href="superadmin_login.html";
+				}
+			})
+		}
+	}	
+});
+</script>
+<!--/请在上方写此页面业务相关的脚本-->
+</body>
+</html>

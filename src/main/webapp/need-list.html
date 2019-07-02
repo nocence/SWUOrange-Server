@@ -1,0 +1,583 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="renderer" content="webkit|ie-comp|ie-stand">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+		<meta http-equiv="Cache-Control" content="no-siteapp" />
+		<link rel="Bookmark" href="/favicon.ico">
+		<link rel="Shortcut Icon" href="/favicon.ico" />
+		<link rel="stylesheet" type="text/css" href="static/h-ui/css/H-ui.min.css" />
+		<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/H-ui.admin.css" />
+		<link rel="stylesheet" type="text/css" href="lib/Hui-iconfont/1.0.8/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="static/h-ui.admin/skin/default/skin.css" id="skin" />
+		<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/style.css" />
+
+
+		<script src="js/jquery-1.11.3.js"></script>
+		<script src="bootstrap/js/bootstrap.js"></script>
+		<script type="text/javascript" src="js/jsencrypt.min.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="js/axios.min.js"></script>
+		<script src="layer/layer.js"></script>
+		<script type="text/javascript" src="laydate/laydate.js"></script>
+		<script type="text/javascript" src="js/swuorange-common.js"></script>
+		<link rel="stylesheet" href="bootstrap/css/bootstrap.css" />
+		<link rel="stylesheet" href="bootstrap/css/bootstrap-theme.css" />
+		<script type="text/javascript" src="js/fileinput.js"></script>
+		<link href="css/fileinput.css" media="all" rel="stylesheet" type="text/css" />
+
+
+		<title>供应列表</title>
+		<style type="text/css">
+			.modal-backdrop {
+				z-index: 0;
+			}
+
+			#pager {
+				width: 300px;
+				margin: auto;
+				margin-right: 30px;
+				height: 30px;
+
+			}
+
+			.input-group {
+				margin-top: 10px;
+			}
+
+			th {
+				text-align: center;
+			}
+		</style>
+		<script type="text/javascript">
+			$(function() {
+				laydate.render({
+					elem: '#logmin',
+					type: 'date',
+					done: function(value, date, endDate) {
+						vm.search.startTime = value;
+					}
+				});
+				laydate.render({
+					elem: '#logmax',
+					type: 'date',
+					done: function(value, date, endDate) {
+						vm.search.endTime = value;
+					}
+				});
+				laydate.render({
+					elem: '#cutoffTime',
+					type: 'date',
+					done: function(value, date, endDate) {
+						vm.supplyInfo.cutoffTime = value;
+					}
+				});
+			})
+		</script>
+
+	</head>
+	<body>
+		<nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 供求管理 <span class="c-gray en">&gt;</span>
+			我的供应<a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);"
+			 title="刷新"><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+		<div class="page-container" id="base-app">
+
+			<div class="text-c">
+				发布时间:
+				<input readonly="readonly" v-model="search.startTime" type="text" id="logmin" class="input-text Wdate" style="width:120px;">
+				-
+				<input readonly="readonly" v-model="search.endTime" type="text" id="logmax" class="input-text Wdate" style="width:120px;">
+
+				<input v-model="search.title" type="text" class="input-text" style="width:250px" placeholder="搜索发布标题">
+				<button @click="getlist()" type="button" class="btn btn-success"><i class="Hui-iconfont">&#xe665;</i> 搜一下</button>
+			</div>
+			<div class="cl pd-5 bg-1 bk-gray mt-20"> <span class="l"><a @click="del1()" href="javascript:;" data-toggle="modal"
+					 data-target="#myConform" class="btn btn-danger radius"><i class="Hui-iconfont">&#xe6e2;</i> 批量删除</a> <a href="javascript:;"
+					 @click="addnew()" class="btn btn-primary radius" data-toggle="modal" data-target="#myBase"><i class="Hui-iconfont">&#xe600;</i>
+						我要供应</a></span> <span class="r">共有数据：<strong>{{page.totalRow}}</strong> 条</span> </div>
+						
+			<table class="table table-border table-bordered table-bg">
+				<thead>
+					<tr>
+						<th scope="col" colspan="12">求购信息列表</th>
+					</tr>
+					<tr class="text-c">
+						<th width="25"></th>
+						<th width="40">序号</th>
+						<th width="150">供求标题</th>
+						<th width="40">分类</th>
+						<th width="40">品种</th>
+						<th width="60">期望价格</th>
+						<th width="40">总量</th>
+						<th width="80"> 发布时间</th>
+						<th width="80"> 截止时间</th>
+						<th width="60"> 联系人</th>
+						<th width="60"> 审核状态</th>
+						<th width="70">操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="(buy,index) in page.list" class="text-c">
+						<td><input type="checkbox" v-model="selelist" :value="buy.supplyId"></td>
+						<td>{{index+1}}</td>
+						<td><a @click="edit(buy)" data-toggle="modal" data-target="#mydetails">{{buy.title}}</a></td>
+						<td>{{buy.productType}}</td>
+						<td>{{buy.variety}}</td>
+						<td>{{buy.unitPrice}}</td>
+						<td>{{buy.quantity}}</td>
+						<td>{{buy.releaseTime}}</td>
+						<td>{{buy.cutoffTime}}</td>
+						<td>{{buy.concat}}</td>
+						<td>{{checkstate(buy.state)}}</td>
+						<td class="td-manage"> <a @click="edit(buy)" title="编辑" href="javascript:;" data-toggle="modal" data-target="#myBase"
+							 class="ml-5" style="text-decoration:none"><i class="Hui-iconfont">&#xe6df;</i></a> <a title="删除" href="javascript:;"
+							 @click="adddel(buy.supplyId)" data-toggle="modal" data-target="#myConform" class="ml-5" style="text-decoration:none"><i
+								 class="Hui-iconfont">&#xe6e2;</i></a></td>
+					</tr>
+				</tbody>
+			</table>
+			<!-- 分页组件  -->
+			<div id="pager">
+				<nav aria-label="Page navigation">
+					<ul class="pagination">
+						<li>
+							<a @click="topage(1)" aria-label="Previous">
+								<span aria-hidden="true">首页</span>
+							</a>
+						</li>
+						<li v-for="p in pages"><a @click="topage(p)">{{p}}</a></li>
+						<li>
+							<a @click="topage(page.totalPage)" aria-label="Next">
+								<span aria-hidden="true">尾页</span>
+							</a>
+						</li>
+					</ul>
+				</nav>
+			</div>
+
+			<!-- 基地增加和基地编辑的模态框 -->
+			<div class="modal fade" id="myBase" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+				<div class="modal-dialog modal-lg">
+					<div class="modal-content">
+						<div class="modal-header" style="background-clip: #F5FAFE;">
+							<h5 class="modal-title" id="myModalLabel">供应保存</h5>
+						</div>
+						<div class="modal-body" style="height: 500px;overflow: scroll;overflow-x:hidden;">
+							<!-- 求购信息编辑区编辑区 -->
+							<div class="input-group">
+								<span class="input-group-addon" id="basic-addon0">发布标题</span>
+								<input v-model="supplyInfo.title" type="text" maxlength="25" class="form-control" placeholder="给您的需求一个简单的名字,便于商家及时了解,25个字符"
+								 aria-describedby="basic-addon0">
+							</div>
+							<div class="input-group">
+								<span class="input-group-addon" id="basic-addon1">所属分类</span>
+								<select id="selectoption" v-model="supplyInfo.productId" @change="getVariety()" class="form-control">
+									<option :value="p.productId" v-for="p in productType">{{p.productType}}</option>
+								</select>
+							</div>
+							<div class="input-group">
+								<span class="input-group-addon" id="basic-addon12">产品品种</span>
+								<select id="selectoption1" v-model="supplyInfo.varietyId" class="form-control">
+									<option :value="p.varietyId" v-for="p in variety">{{p.variety}}</option>
+								</select>
+							</div>
+							<div class="input-group">
+								<span class="input-group-addon">供应总量</span>
+								<input v-model="supplyInfo.quantity" type="number" class="form-control" aria-label="">
+								<span class="input-group-addon">{{getdw()}}</span>
+							</div>
+							<div class="input-group">
+								<span class="input-group-addon">最小下单量</span>
+								<input v-model="supplyInfo.orderQuantity" type="number" class="form-control" aria-label="">
+								<span class="input-group-addon">{{getdw()}}</span>
+							</div>
+							<div class="input-group">
+								<span class="input-group-addon">期望价格</span>
+								<input v-model="supplyInfo.unitPrice" type="number" class="form-control" aria-label="">
+								<span class="input-group-addon">元</span>
+							</div>
+
+							<div class="input-group" style="width: 30%;">
+								<span class="input-group-addon" id="basic-addon3">到期时间</span>
+								<input v-model="supplyInfo.cutoffTime" type="text" id="cutoffTime" class="form-control  Wdate" aria-describedby="basic-addon3">
+							</div>
+							<div class="input-group">
+								<span class="input-group-addon" id="basic-addon4">&nbsp;联&nbsp;系&nbsp;人</span>
+								<input v-model="supplyInfo.concat" type="text" class="form-control" placeholder="" aria-describedby="basic-addon4">
+							</div>
+							<div class="input-group">
+								<span class="input-group-addon" id="basic-addon5">联系电话</span>
+								<input v-model="supplyInfo.tel" type="number" class="form-control" placeholder="" aria-describedby="basic-addon5">
+							</div>
+							<div class="input-group">
+								<span class="input-group-addon" id="basic-addon6">联系地址</span>
+								<input v-model="supplyInfo.location" type="text" class="form-control" placeholder="" aria-describedby="basic-addon6">
+							</div>
+
+
+							<div class="input-group">
+								<span class="input-group-addon" id="basic-addon7">详细说明</span>
+								<textarea rows="5" v-model="supplyInfo.details" style="resize:none" class="form-control" id="inputDetails"
+								 placeholder="对您要购买的信息进行详细的描述,以便于卖家及时了解,长度不超过500个字符!"></textarea>
+							</div>
+							<div class="input-group">
+								<span class="input-group-addon" id="basic-addon7">产品图片</span>
+								<!-- <label for="kv-explorer" class="control-label">产品图片</label> -->
+								<!-- <div class="file-input col-sm-9" style="width:35%;height:20%"> -->
+								<input @change="addFile($event)" id="kv-explorer" type="file" multiple>
+								<!-- </div> -->
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+							<button @click="importimg($event)" type="button" data-dismiss="modal" class="btn btn-primary">保存</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- 查询详细信息的模态框 -->
+			<div class="modal fade" id="mydetails" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" aria-hidden="true">
+				<div class="modal-dialog modal-lg">
+					<div class="modal-content">
+						<div class="modal-header" style="background-clip: #F5FAFE;">
+							<h5 class="modal-title" id="myModalLabel1">供应详情</h5>
+						</div>
+						<div class="modal-body" style="height: 500px;overflow: scroll;overflow-x:hidden;">
+							<!-- 求购信息编辑区编辑区 -->
+							<div style="width: 90%; margin: auto;">
+								<table class="table table-striped table-hover">
+									<tr>
+										<td width="20%">
+											发布标题
+										</td>
+										<td>{{supplyInfo.title}}</td>
+									</tr>
+									<tr>
+										<td>
+											所属分类
+										</td>
+										<td>{{supplyInfo.productType}}</td>
+									</tr>
+									<tr>
+										<td>
+											产品品种
+										</td>
+										<td>{{supplyInfo.variety}}</td>
+									</tr>
+									<tr>
+										<td>
+											供应总量
+										</td>
+										<td>{{supplyInfo.quantity}}{{getdw()}}</td>
+									</tr>
+									<tr>
+										<td>
+											最小下单量
+										</td>
+										<td>{{supplyInfo.orderQuantity}}{{getdw()}}</td>
+									</tr>
+									<tr>
+										<td>
+											价格
+										</td>
+										<td>{{supplyInfo.unitPrice}} 元/{{getdw()}}</td>
+									</tr>
+									<tr>
+										<td>
+											发布时间
+										</td>
+										<td>{{supplyInfo.releaseTime}}</td>
+									</tr>
+									<tr>
+										<td>
+											到期时间
+										</td>
+										<td>{{supplyInfo.cutoffTime}}</td>
+									</tr>
+									<tr>
+										<td>
+											联系人
+										</td>
+										<td>{{supplyInfo.concat}}</td>
+									</tr>
+									<tr>
+										<td>
+											联系电话
+										</td>
+										<td>{{supplyInfo.tel}}</td>
+									</tr>
+									<tr>
+										<td>
+											联系地址
+										</td>
+										<td>{{supplyInfo.location}}</td>
+									</tr>
+									<tr>
+										<td>
+											详细说明
+										</td>
+										<td>{{supplyInfo.details}}</td>
+									</tr>
+									<tr>
+										<td>
+											审核状态
+										</td>
+										<td>{{checkstate(supplyInfo.state)}}</td>
+									</tr>
+									<tr>
+										<td>
+											审核信息
+										</td>
+										<td>{{supplyInfo.remarks}}</td>
+									</tr>
+									<tr>
+										<td>
+											产品图片
+										</td>
+										<td>
+											<img :src="supplyInfo.url" />
+										</td>
+									</tr>
+								</table>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+						</div>
+					</div>
+				</div>
+
+
+			</div>
+			<div class="modal fade" id="myConform" tabindex="-1" role="dialog" aria-labelledby="myConform" aria-hidden="true">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h2 class="modal-title" id="myModalLabel">{{conf.title}}</h2>
+						</div>
+						<div class="modal-body">{{conf.msg}}</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+							<button type="button" @click="del()" data-dismiss="modal" class="btn btn-primary">确认</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<!--_footer 作为公共模版分离出去-->
+		<!-- <script type="text/javascript" src="lib/jquery/1.9.1/jquery.min.js"></script> 
+		<script type="text/javascript" src="lib/layer/2.4/layer.js"></script>
+		<script type="text/javascript" src="static/h-ui/js/H-ui.min.js"></script>
+		<script type="text/javascript" src="static/h-ui.admin/js/H-ui.admin.js"></script> -->
+		<!--/_footer 作为公共模版分离出去-->
+
+		<!--请在下方写此页面业务相关的脚本-->
+		<script type="text/javascript" src="lib/My97DatePicker/4.8/WdatePicker.js"></script>
+		
+		<!-- <script type="text/javascript" src="lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" src="lib/laypage/1.2/laypage.js"></script>  -->
+		<script type="text/javascript">
+			var vm = new Vue({
+				el: "#base-app",
+				data: {
+					supplyInfo: {},
+					productType: [],
+					variety: [],
+					//向后端发送的条件查询对象
+					search: {
+						nowPage: 1
+					},
+					//后端返回数据
+					page: {},
+					//想要跳转的页面
+					wantpage: '',
+					//分页数组
+					pages: [],
+					/* 选中列表 */
+					selelist: [],
+					/* 模态提示框 */
+					conf: {
+						title: "",
+						msg: ""
+					},
+					file: ""
+				},
+				created: function() {
+					this.getlist();
+					this.getProductType();
+				},
+				methods: {
+					/* 通过各种条件查询list */
+					getlist: function() {
+						this.pages = [];
+						sendAxios(
+							'supply/getSupplyList',
+							this.search
+						).then(res => {
+							this.page = res.data;
+							this.getpage(res.data.nowPage);
+							this.selelist=[];
+						})
+					},
+					getpage: function(nowpage) {
+						var start = 1;
+						var end = nowpage + 2;
+						if (nowpage - 2 <= 0) {
+							start = 1;
+						} else {
+							start = nowpage - 2;
+						};
+						if (nowpage + 2 >= this.page.totalPage) {
+							end = this.page.totalPage;
+						};
+
+						for (var i = start; i <= end; i++) {
+							this.pages.push(i);
+						}
+					},
+					topage: function(topage) {
+						this.search.nowPage = topage;
+						this.getlist();
+					},
+					//单个删除加入框
+					adddel: function(id) {
+						this.selelist = [];
+						this.selelist.push(id);
+						this.conf = {
+							title: "确认删除",
+							msg: "您将要删除" + this.selelist.length + "条信息?"
+						}
+					},
+					del1: function() {
+						this.conf = {
+							title: "确认删除",
+							msg: "您将要删除" + this.selelist.length + "条信息?"
+						}
+					},
+					del: function() {
+						var arr = JSON.stringify(this.selelist);
+						var list = {
+							arr: arr
+						}
+						sendAxios(
+							'supply/delSupplyList',
+							list
+						).then(res => {
+							//this.conf.msg = res.data.msg;
+							//this.result = res.data;
+							layer.msg(res.data.msg);
+							checkBom(this.getlist);
+						})
+					},
+					//根据输入模糊查询企业员工
+					getdw: function() {
+						if (this.supplyInfo.productId == "1") {
+							return "吨";
+						} else if (this.supplyInfo.productId == "2") {
+							return "株";
+						} else if (this.supplyInfo.productId == "3") {
+							return "件";
+						} else {
+							return "请选择产品类型";
+						}
+					},
+					checkstate: function(state) {
+						var i = "";
+						if (state == "0") {
+							i = "审核未通过"
+						} else if (state == "1") {
+							i = "待审核"
+						} else if (state == "2") {
+							i = "审核通过"
+						}
+						return i;
+					},
+					getProductType: function() {
+						sendAxios(
+							'demand/getProductType', {}
+						).then(res => {
+							this.productType = res.data.obj;
+						})
+					},
+					edit: function(val) {
+						this.supplyInfo = val;
+					},
+					addnew: function() {
+						this.supplyInfo = {};
+					},
+					getVariety: function() {
+						sendAxios(
+							'supply/getVariety', {
+								productId: this.supplyInfo.productId
+							}
+						).then(res => {
+							this.variety = res.data.obj;
+						})
+					},
+					addFile: function(event) {
+						this.file = event.target.files[0];
+						console.log(this.file)
+					},
+					importimg: function(event) {
+						//阻止元素发生默认的行为
+						event.preventDefault();
+						
+						//创建加解密对象
+						var encrypt = new JSEncrypt();
+						//设置公钥
+						encrypt.setPublicKey("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCPV1BM0YOsrfQIbYDkzyqsxtwIQT2ETYAskfUDxl7RNfZAAJGVxKD2KAyHdAv5bYRLKejAvPUBulSII45pM7iWK4Fb0D5YNomVtcMYijGn2B9vumKtLxBxOQAkt5VVVJE2zu6Dj1S/IGhgdkdBwLvmnsyogrmFIW6AqRnOV/JkLQIDAQAB");
+						//获取时间
+						var nowtime = Date.parse(new Date());
+						//获取密码加时间的密钥
+						var mykey = "swuOrange" + "|" + nowtime;
+						//进行编码
+						var m = encrypt.encrypt(mykey);
+						
+						let formData = new FormData();
+						var str = JSON.stringify(this.supplyInfo)
+						formData.append("file", this.file);
+						formData.append("supplyInfo",str);
+						formData.append("passSign",m);
+						//console.log(formData.get('supplyInfo'))
+						/* const instance = axios.create({
+							withCredentials: true
+						}) */
+						axios({
+							method: "post", //请求方式
+							url: 'supply/insertOrUpdate', //请求地址
+							data: formData,
+							//请求头，很重要，告诉浏览器这是一个文件不是普通请求
+							headers: {
+								"Content-Type": "multipart/form-data"
+							}
+						}).then(res => { //回调函数
+							layer.msg(res.data.msg);
+							if(res.data.code==200){
+								checkBom(this.getlist);
+							}
+							
+						})
+					}
+				},
+			})
+
+			$(document).ready(function() {
+				$("#test-upload").fileinput({
+					'theme': 'fas',
+					'showPreview': false,
+					'allowedFileExtensions': ['jpg', 'png', 'gif'],
+					'elErrorContainer': '#errorBlock'
+				});
+				$("#kv-explorer").fileinput({
+					'theme': 'explorer-fas',
+					'uploadUrl': '#',
+					overwriteInitial: false,
+					initialPreviewAsData: true,
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.swuorange.dao.AdminCompanyMapper" >
+
+  <select id="getCompanyListByState" resultType="com.swuorange.dto.AdminCompanyDTO">
+  	SELECT u.`account` ,c.* FROM swu_user u
+	JOIN swu_companyinfo c ON u.`companyinfo_id` = c.`companyinfo_id`
+	WHERE state=#{state}
+  </select>
+  
+  <select id="queryCompanyById" resultType="com.swuorange.dto.AdminCompanyDTO">
+  	SELECT u.`account` ,c.* FROM swu_user u
+	JOIN swu_companyinfo c ON u.`companyinfo_id` = c.`companyinfo_id`
+	WHERE c.`companyinfo_id` = #{companyInfoId}
+  </select>
+  
+  <update id="updateCompanyById">
+  	UPDATE 
+	  `swu_companyinfo` 
+	SET
+	  `state` = #{state} 
+	WHERE `companyinfo_id` = #{companyInfoId}
+  </update>
+  
+  <select id="queryUserId" resultType="java.lang.Integer">
+  		SELECT u.`user_id` FROM swu_user u
+			JOIN swu_companyinfo c ON u.`companyinfo_id` = c.`companyinfo_id`
+			WHERE c.`companyinfo_id` = #{companyInfoId}
+  </select>
+  
+  <update id="updateUserRole">
+  		UPDATE 
+		  `swu_userrole` 
+		SET
+		  `role_id` = #{role}
+		WHERE `user_id` = #{userId}
+  </update>
+</mapper>

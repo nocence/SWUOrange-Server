@@ -1,0 +1,423 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+<link rel="Bookmark" href="/favicon.ico" >
+<link rel="Shortcut Icon" href="/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="static/h-ui/css/H-ui.min.css" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/H-ui.admin.css" />
+<link rel="stylesheet" type="text/css" href="lib/Hui-iconfont/1.0.8/iconfont.css" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/skin/default/skin.css" id="skin" />
+<link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/style.css" />
+<script type="text/javascript" src="js/jquery-1.11.3.js"></script>
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<script type="text/javascript">
+$(function() {
+	laydate.render({
+		elem: '#logmin',
+		type: 'date',
+		done: function(value, date, endDate) {
+			vue.record.startTime = value;
+		}
+	});
+	laydate.render({
+		elem: '#logmax',
+		type: 'date',
+		done: function(value, date, endDate) {
+			vue.record.endTime = value;
+		}
+	});
+
+})
+</script>
+<title>生产列表</title>
+</head>
+<body>
+<nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 生产记录管理 <span class="c-gray en">&gt;</span> 生产记录总览<a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+<div id="myVuePage">
+	<div class="text-c"> 
+		添加时间:
+		 <input v-model="record.startTime" type="text" id="logmin" class="input-text Wdate" style="width:120px;"> 
+		 - 
+		 <input v-model="record.endTime" type="text" id="logmax" class="input-text Wdate" style="width:120px;"> 
+		 <input v-model="record.batchNum" type="text" class="input-text" style="width:250px" placeholder="搜索产品批次">
+		<button type="button" class="btn btn-success" @click="query()"><i class="Hui-iconfont">&#xe665;</i> 点击搜索</button>
+	</div>
+	<div class="cl pd-5 bg-1 bk-gray mt-20"> 
+		<span class="l">
+			<button class="btn btn-primary radius" data-toggle="modal" data-target="#myInsert" @click="getRecord()"><i class="Hui-iconfont">&#xe600;</i> 添加生产记录</button> 
+		</span> 
+	</div>
+	<table class="table table-border table-bordered table-bg">
+		<thead>
+			<tr>
+				<th scope="col" colspan="10">生产记录列表</th>
+			</tr>
+			<tr class="text-c">
+				<th width="25"><input type="checkbox" name="" value=""></th>
+				<th width="40">序号</th>
+				<th width="150">生产记录编号</th>
+				<th width="150">产品批次</th>
+				<th width="200">生产场地</th>
+				<th width="80">产品名称</th>
+				<th width="80">产品类型</th>
+				<th width="150">操作简要</th>
+				<th width="130">操作人</th>
+				<th width="130">添加时间</th>
+				<th width="80">查看</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr class="text-c" v-for="(i,index) in records">
+				<td><input type="checkbox" value="1" name=""></td>
+				<td>{{index+1}}</td>
+				<td>{{i.recordId}}</td>
+				<td>{{i.batchNum}}</td>
+				<td>{{i.subbaseName}}</td>
+				<td>{{i.variety}}</td>
+				<td>{{i.productType}}</td>
+				<td>{{i.operate}}</td>
+				<td>{{i.realName}}</td>
+				<td>{{i.doTime}}</td>
+				<td class="td-manage">
+					<button class="btn btn-primary radius"  v-on:click="showMessage(i)"  title="详情" data-toggle="modal" data-target="#mydal">
+							<i class="Hui-iconfont">详情</i>
+					</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<!-- 分页组件 -->
+	<div class="ui_tb_h30" style="float:right ">
+		<div class="ui_flt" style="height: 30px; line-height: 30px;" >
+		共有<span class="ui_txt_bold04">{{totalData}}</span>
+		条记录，当前第<span class="ui_txt_bold04">{{record.nowPage}}/{{totalPage}}</span>页</div>
+		<div class="ui_frt">
+			<!--    如果是第一页，则只显示下一页、尾页 -->
+			<input type="button" value="首页" class="btn ui_input_btn01" @click="firstPage"/>
+			<input type="button" value="上一页" class="btn ui_input_btn01" @click="previousPage"/>
+			<input type="button" value="下一页" class="btn ui_input_btn01" @click="nextPage" />
+			<input type="button" value="尾页" class="btn ui_input_btn01" @click="lastPage" />
+			<!--     如果是最后一页，则只显示首页、上一页 -->
+			转到第<input type="text" id="jumpNumTxt" class="ui_input_txt01" v-model="targets"/>页
+			<input type="button" class="btn ui_input_btn01" value="跳转" @click="turnPage()" />
+		</div>
+	</div>
+	<!-- 详情模态框 -->
+	<div class="modal fade" id="mydal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<p style="font-size: 20px;">操作详细信息</p>
+					<table class="table table-striped table-hover" >
+						
+						<tr>
+							<td width="30%">生产记录编号</td>
+							<td width="70%">{{modalRecord.recordId}}</td>
+						</tr>
+						<tr>
+							<td>产品批次</td>
+							<td>{{modalRecord.batchNum}}</td>
+						</tr>
+						<tr>
+							<td>生产场地</td>
+							<td>{{modalRecord.subbaseName}}</td>
+						</tr>
+						<tr>
+							<td>产品名称</td>
+							<td>{{modalRecord.variety}}</td>
+						</tr>
+						<tr>
+							<td>产品类型</td>
+							<td>{{modalRecord.productType}}</td>
+						</tr>
+						<tr>
+							<td>操作简要</td>
+							<td>{{modalRecord.operate}}</td>
+						</tr>
+						<tr>
+							<td>操作详情</td>
+							<td>{{modalRecord.operateDetail}}</td>
+						</tr>
+						<tr>
+							<td>操作人</td>
+							<td>{{modalRecord.realName}}</td>
+						</tr>
+						<tr>
+							<td>添加时间</td>
+							<td>{{modalRecord.doTime}}</td>
+						</tr>
+					</table>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+				</div>
+			</div>
+		</div>
+	</div> 
+	<!-- 添加生产记录模态框 -->
+	 <div class="modal fade" id="myInsert" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<p style="font-size: 20px;">添加生产记录</p>
+					<table class="table table-striped table-hover" >
+						<tr>
+							<td width="30%">产品批次</td>
+							<td width="70%">
+								<select class="select" size="1" v-model="postRecord.batchNum" @change="getDetail">
+									<option >--请选择--</option>
+									<option :value="g.batchNum" v-for="g in getRecords">{{g.batchNum}}</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<td>产品名称</td>
+							<td>{{getMessage.variety}}</td>
+						</tr>
+						<tr>
+							<td>产品类型</td>
+							<td>{{getMessage.productType}}</td>
+						</tr>
+						<tr>
+							<td>操作简要</td>
+							<td>
+								<input class="input-text" v-model="postRecord.operate">
+							</td>
+						</tr>
+						<tr>
+							<td>操作详情</td>
+							<td>
+								<textarea rows="" cols="" v-model="postRecord.operateDetail">
+								</textarea>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal" @click="add()">提交</button>
+				</div>
+			</div>
+		</div>
+	</div> 
+	<!-- 提示模态框 -->
+	<div class="modal fade" id="mydialog" tabindex="-1" role="dialog" aria-labelledby="mydialog" aria-hidden="true">
+	    <div class="modal-dialog">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h2 class="modal-title" id="myModalLabel">提示</h2>
+	            </div>
+	            <div class="modal-body">{{msg}}</div>
+	            <div class="modal-footer">
+	                <button type="button" @click="mysure()" data-dismiss="modal" class="btn btn-primary">确认</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	
+</div>
+<!-- 引入Vue -->
+
+<script type="text/javascript" src="js/vue.js"></script>
+<script type="text/javascript" src="js/jsencrypt.min.js"></script>
+<script type="text/javascript" src="js/vue-resource.min.js"></script>
+<script type="text/javascript" src="js/axios.min.js"></script>
+<script type="text/javascript" src="js/swuorange-common.js"></script>
+<!--_footer 作为公共模版分离出去-->
+<script type="text/javascript" src="lib/layer/2.4/layer.js"></script>
+<script type="text/javascript" src="static/h-ui/js/H-ui.min.js"></script> 
+<script type="text/javascript" src="static/h-ui.admin/js/H-ui.admin.js"></script> <!--/_footer 作为公共模版分离出去-->
+
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="lib/My97DatePicker/4.8/WdatePicker.js"></script> 
+<script type="text/javascript" src="lib/datatables/1.10.0/jquery.dataTables.min.js"></script> 
+<script type="text/javascript" src="lib/laypage/1.2/laypage.js"></script>
+<script type="text/javascript">
+/*
+	参数解释：
+	title	标题
+	url		请求的url
+	id		需要操作的数据id
+	w		弹出层宽度（缺省调默认值）
+	h		弹出层高度（缺省调默认值）
+*/
+/*管理员-增加*/
+function admin_add(title,url,w,h){
+	layer_show(title,url,w,h);
+}
+var vue=new Vue({
+	el:"#myVuePage", 
+	data:{
+		records:[],
+		/*总页数*/
+		totalPage:"",
+		/*记录总数*/
+		totalData:"",
+		/*跳转的目标页*/
+		targets:"",
+		/* 接收详情模态框的对象 */
+		modalRecord:{},
+		/* 初始化或者条件查询上传的参数对象 */
+		record:{
+			/*当前页数*/
+			nowPage:1,
+			/* 根据生产批号条件查询 */
+			batchNum:"",
+			startTime:"",
+			endTime:""
+		},
+		/* 接收添加生产记录的数组 */
+		getRecords:[],
+		/* 根据生产批号获取的详细信息 */
+		getMessage:{},
+		/* 添加生产记录需要上传的对象 */	
+		postRecord:{
+			recordId:"",
+			batchNum:"",
+			operate:"",
+			operateDetail:""
+		},
+		msg:""
+	},
+	methods:{
+		query:function(){
+   			if(this.record.batchNum==""){
+				this.record.batchNum=null
+			}
+			if(this.record.startTime==""){
+				this.record.startTime=null
+			}
+			if(this.record.endTime==""){
+				this.record.endTime=null
+			}
+			sendAxios(
+				"record/showRcoeds",
+				this.record
+			).then(res=>{
+					this.records=res.data.list;
+					this.record.nowPage=res.data.nowPage;
+					this.totalPage=res.data.totalPage;
+					this.totalData=res.data.totalData;
+					this.targets="";
+			})
+    	},
+    	//详情模态框显示数据
+    	showMessage:function(val){
+    		this.modalRecord=val;
+    	},
+    	//获取产品批次
+    	getRecord:function(){
+    		sendAxios(
+    			"record/getRecord",
+    			{}
+    		).then(res=>{
+    			if(res.data.code=="400"){
+    				this.msg=res.data.msg;
+    				$("#myInsert").modal("hide");
+    				$("#mydialog").modal("show");
+    			}else{
+	    			this.getRecords=res.data.first;
+    			}
+    		})
+    	},
+    	//根据批次获取产品名和类型
+    	getDetail:function(){
+    		sendAxios(
+    			"record/getDetail",
+    			this.postRecord
+    		).then(res=>{
+    			this.getMessage=res.data.obj;
+    		})
+    	},
+    	//提交添加记录
+    	add:function(){
+    		console.log(this.postRecord);
+    		sendAxios(
+    			"record/addRecord",
+    			this.postRecord
+    		).then(res=>{
+    			if(res.data.code==200){
+						this.IntervalTimer();
+					}else{
+						$("#mydialog").modal("show");
+						this.msg=res.data.msg;
+					}
+    		})
+    	},
+    	/* 添加批次后发送请求监听MQ的返回消息 */
+		check:function(){
+			sendAxios(
+				"check",{}
+			).then(res=>{
+				if(res.data.code==200){
+					$("#mydialog").modal("show");
+					this.msg="信息添加成功，即将刷新当前页面！";
+				}else if(res.data.code==400){
+					$("#mydialog").modal("show");
+					this.msg="信息添加失败！";
+				}
+			})
+		},
+    	IntervalTimer:function(){
+				setTimeout(this.check(), 2000);
+			},
+    	mysure:function(){
+				$("#mydialog").modal("hide");
+				setTimeout(function(){
+							window.location.reload();
+						}, 2000);
+			},
+		//点击首页
+		firstPage:function(){
+			this.record.nowPage=1;
+			this.query();
+		},
+		//点击尾页
+		lastPage:function(){
+			this.record.nowPage=this.totalPage;
+			this.query();
+		},
+		//点击上一页
+		previousPage:function(){
+			if(this.record.nowPage== 1){
+				this.record .nowPage= 1;
+			}else{
+				this.record .nowPage-= 1;
+			}
+			this.query();
+		},
+		//点击下一页
+		nextPage:function(){
+			if(this.record.nowPage +1>=this.totalPage){
+				this.record.nowPage=this.totalPage;
+			}else{
+				this.record.nowPage +=1;
+			}
+			this.query();
+		},
+	   		//跳转页面
+		turnPage:function(){
+			if(this.targets > this.totalPage){
+				this.record.nowPage=this.totalPage;
+			}else if(this.targets < 1){
+				this.record.nowPage=1;
+			}else{
+				this.record.nowPage=this.targets;
+			}
+			this.query();
+		}
+	},
+	created:function(){
+		this.query();
+		
+	}
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 配置对应的mapper映射文件 -->
+<mapper namespace="com.swuorange.dao.SubbaseMapper">
+	
+	<select id="querySubbases" resultType="com.swuorange.dto.SubbaseListDTO">
+		SELECT ss.`subbase_id`, 
+				ss.`subbase_name`,
+				ss.`subbase_address`,
+				ss.`principal`,
+				ss.`production_recorder`,
+				ss.`base_id`,
+				sb.`base_name`,
+				ss.`companyinfo_id`,
+				sc.`company_name` 
+		FROM `swu_subbase` ss , `swu_base` sb , `swu_companyinfo` sc
+		WHERE ss.`base_id` = sb.`base_id` 
+			and ss.`companyinfo_id` = sc.`companyinfo_id` 
+			and ss.`companyinfo_id` = #{companyinfoId}
+	</select>
+	
+	<select id="queryStaffName"  resultType="com.swuorange.dto.Staff">
+     
+     	select * from swu_staffs where staff_id not in (select staff_id from swu_secondary_staff where companyinfo_id=#{companyinfoId})
+     	
+     </select>
+     
+     <select id="queryBaseName"  resultType="com.swuorange.dto.BaseDTOsmall">
+     
+     	select * from `swu_base` where `companyinfo_id` = #{companyinfoId}
+     	
+     </select>
+          
+     <select id="querySubbasesBlur" resultType="com.swuorange.dto.Subbase">
+		select * from swu_subbase where companyinfo_id = #{companyinfoId} and subbase_name like concat(concat('%',#{subbaseName},'%'))
+		
+	</select>
+	
+	<select id="queryStaffId"  resultType="java.lang.Integer">
+     
+     	select staff_id from `swu_staffs` where `staff_name` = #{staffName} 
+     	
+     </select>
+     
+     <select id="querySubbaseId"  resultType="com.swuorange.po.Subbase" >
+     
+     	select * from `swu_subbase` where `subbase_name` = #{subbaseName} and `subbase_address` = #{subbaseAddress} 
+     	
+     </select>
+     
+     <select id="queryUserId"  resultType="java.lang.Integer">
+     
+     	select user_id from `swu_user` where `realname` = #{productionRecorder} 
+     	
+     </select>
+     
+     
+     <select id="querySssUserId"  resultType="java.lang.Integer">
+     
+     	select user_id from swu_secondary_staff where subbase_id = #{subbaseId} and user_id &lt;&gt; 0 
+     	
+     </select>
+     
+     
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

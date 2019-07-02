@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+    <mapper namespace="com.swuorange.dao.BatchMapper">
+	
+    	<!-- 根据生产基地查询总的生产批次条数 -->
+	    <select id="totalInfoBySubbseId" resultType="Integer" >
+	    	select count(*) from swu_product_batch spb where 1 
+	    		
+	    		<if test="batch.batchNum!=null">
+	    			and spb.product_batch_num = #{batch.batchNum}
+	    		</if> 
+	    		and spb.subbase_id = 
+	    		(select subbase_id from swu_secondary_staff sss where sss.user_id=#{user.userId})
+	    </select>
+	    
+	   <!-- 根据生产基地查询的分页数据 --> 
+	    <select id="queryListBySubbseId" resultType="com.swuorange.po.Batch" >
+	         select spb.product_batch_num batchNum,sv.variety productName,
+	         	sp.product_type productType,spb.number productNum,
+	         	spb.unit unit,ss.subbase_name subbaseName
+	         	from swu_product_batch spb
+	         	join swu_secondary_staff sss on spb.subbase_id = sss.subbase_id
+	         	join swu_subbase ss on sss.subbase_id = ss.subbase_id
+	         	join swu_variety sv on spb.variety_id = sv.variety_id 
+	         	join swu_product sp on sv.product_id = sp.product_id 
+	         	where 1
+	         	<if test="batch.batchNum!=null">
+	    			and spb.product_batch_num = #{batch.batchNum}
+	    		</if> 
+	         	and sss.user_id=#{user.userId}
+	         	limit #{page.beginIndex},#{page.everyPage}
+	    </select>
+	    
+	    <!-- 根据公司查询生产批次 -->
+	    <select id="totalInfoByCompanyinfoId" resultType="Integer" >
+		    SELECT count(*) from swu_product_batch spb 
+					join swu_secondary_staff sss on spb.subbase_id = sss.subbase_id 
+					join swu_subbase ss on ss.subbase_id = sss.subbase_id
+					join swu_base sb on ss.base_id = sb.base_id
+					join swu_user su on sb.companyinfo_id = su.companyinfo_id
+					where 1
+					<if test="batch.batchNum!=null">
+	    				and spb.product_batch_num = #{batch.batchNum}
+	    			</if> 
+					and sss.user_id !="" and su.user_id=#{user.userId};
+	    </select>
+	    <!-- 根据公司查询的分页数据 -->
+	    <select id="queryListByCompanyinfoId" resultType="com.swuorange.po.Batch" >
+		    select spb.product_batch_num batchNum,sv.variety productName,
+		         	sp.product_type productType,spb.number productNum,
+		         	spb.unit unit,ss.subbase_name subbaseName
+		         	from swu_product_batch spb
+		         	join swu_variety sv on spb.variety_id = sv.variety_id 
+		         	join swu_product sp on sv.product_id = sp.product_id 
+		         	join swu_subbase ss on spb.subbase_id = ss.subbase_id
+		         	join swu_secondary_staff sss on sss.subbase_id = ss.subbase_id
+		         	join swu_base sb on sb.base_id = ss.base_id 
+		         	join swu_user su on su.companyinfo_id = sb.companyinfo_id 
+		    		where 1
+	    			<if test="batch.batchNum!=null">
+    					and spb.product_batch_num = #{batch.batchNum}
+	    			</if> 
+		    		and sss.user_id !="" and su.user_id=#{user.userId}
+		         	limit #{page.beginIndex},#{page.everyPage}
+	    </select>
+	    
+	    <!-- 查询所有产品类型 -->
+	    <select id="allproductType" resultType="com.swuorange.po.Batch">
+  			select product_id productId,product_type productType from swu_product;
+  		</select>
+  		
+  		<!-- 查询所有产品名字 -->
+  		<select id="allproductName" resultType="com.swuorange.po.Batch" parameterType="com.swuorange.po.Batch">
+  			select variety_id varietyId,variety productName from swu_variety where product_id=#{productId}
+  		</select>
+  		
+  		<!-- 生产记录者根据当前userid查询二级生产单位 -->
+	  	<select id="allsubbaseNameByuserId" resultType="com.swuorange.po.Batch" parameterType="com.swuorange.po.User">
+	  		select subbase_id subbaseId, subbase_name subbaseName from swu_subbase where subbase_id = 
+	  			(select subbase_id from swu_secondary_staff where user_id=#{userId})
+	  	</select>
+	  	
+  		<!-- 企业用户根据当前用户userid获取companyinfoId并查询所有二级生产单位 -->
+	  	<select id="allsubbaseNameByCompanyinfoId" resultType="com.swuorange.po.Batch" parameterType="com.swuorange.po.User">
+	  		select subbase_id subbaseId,subbase_name subbaseName from swu_subbase where companyinfo_id = 
+	  			(select companyinfo_id from swu_user where user_id = #{userId})
+	  	</select>
+    </mapper>
+
